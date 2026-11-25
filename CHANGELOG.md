@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.0 (2026-11-25)
+
+- Recorded announcer clips (`GAME.voiceClips`, a folder path such as `'voice/'`). The folder holds `manifest.json`, a list of phrase slugs, and one `.mp3` per slug. A slug is the spoken line in lowercase with every run of other characters turned into `-` (`'franklin d. roosevelt wins'` becomes `franklin-d-roosevelt-wins`). Clips play through the game's own audio, so the announcer is heard wherever the music is; phones that block the browser's text-to-speech (iPhone Safari in particular) now hear the announcer too. Lines without a clip still use text-to-speech. Clips load on the first tap. The radio crackle (`GAME.voice.radio`) plays under clips as well.
+
 ## 1.1.2 (2026-11-25)
 
 Fixes for POTUS Kombat. Nothing changes for a game that doesn't use these features.

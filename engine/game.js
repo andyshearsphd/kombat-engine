@@ -15,11 +15,12 @@
   const ease = t => { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); };
   FX.setFloor(FLOOR);
   const AUTO = /auto/.test(location.search);
-  const G = Object.assign({ title: 'KOMBAT', subtitle: '', ladderGoal: '', endingLine: '', mascot: null, toasty: null, winPoses: null, projectiles: {}, ladder: {}, tunes: null, menuTune: null }, window.GAME || {});
+  const G = Object.assign({ voiceClips: null, title: 'KOMBAT', subtitle: '', ladderGoal: '', endingLine: '', mascot: null, toasty: null, winPoses: null, projectiles: {}, ladder: {}, tunes: null, menuTune: null }, window.GAME || {});
   // announcer calls (1.1): any of these can be replaced by the game
   const CALL = Object.assign({ fight: 'FIGHT!', round: 'ROUND', finish: null, fatality: 'FATALITY', flawless: 'FLAWLESS VICTORY', wins: 'WINS', next: 'NEXT FIGHTER', mirror: 'MIRROR MATCH', endurance: 'ENDURANCE' }, G.calls || {});
   const spoken = s => s.replace(/[!.]/g, '').toLowerCase();
   if (G.voice) SFX.voice(G.voice);
+  if (G.voiceClips) SFX.setClips(G.voiceClips);
   if (G.muteKey) SFX.setKey(G.muteKey);
   if (G.tunes || G.menuTune) SFX.setTunes(G.tunes, G.menuTune);
   const mascotDef = () => G.mascot && ROSTER.ALL[G.mascot];
