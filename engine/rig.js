@@ -518,7 +518,15 @@ const RIG = (() => {
   const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
   const DW = 380, DH = 340, DAX = 190, DAY = 268;
   let dcv = null, dg = null, DNOISE = null;
+  // opt.cache: an object (a fighter) whose finished sprite is kept and reused for opt.every frames (1.1.1),
+  // so each fighter is digitized every other frame; the game bumps digi.frame once per rendered frame
+  const DCACHE = new WeakMap();
   function digi(g, x, y, fn, opt = {}) {
+    if (opt.cache) {
+      const c = DCACHE.get(opt.cache), key = (opt.tint || '') + '|' + (opt.box || '');
+      const ev = opt.every || 2;
+      if (c && c.key === key && (digi.frame + (opt.phase || 0)) % ev !== 0 && digi.frame - c.frame < ev && digi.frame >= c.frame) { g.drawImage(c.cv, Math.round(x) - DAX + c.ox, Math.round(y) - DAY + c.oy); return; }
+    }
     if (!dcv) {
       dcv = document.createElement('canvas'); dcv.width = DW; dcv.height = DH; dg = dcv.getContext('2d', { willReadFrequently: true });
       DNOISE = new Int8Array(DW * DH); let s = 3; for (let i = 0; i < DNOISE.length; i++) { s = (s * 16807) % 2147483647; DNOISE[i] = ((s / 2147483647) - 0.5) * 30; }
@@ -558,8 +566,15 @@ const RIG = (() => {
     if (tint) for (let i = 0; i < dd.length; i += 4) if (dd[i + 3]) { dd[i] *= tint[0]; dd[i + 1] *= tint[1]; dd[i + 2] *= tint[2]; }
     dg.putImageData(img, bx0, by0);
     g.drawImage(dcv, Math.round(x) - DAX, Math.round(y) - DAY);
+    if (opt.cache) {
+      let c = DCACHE.get(opt.cache);
+      if (!c) { c = { cv: document.createElement('canvas') }; c.cv.width = bw; c.cv.height = bh; DCACHE.set(opt.cache, c); }
+      if (c.cv.width !== bw || c.cv.height !== bh) { c.cv.width = bw; c.cv.height = bh; }
+      const cg = c.cv.getContext('2d'); cg.clearRect(0, 0, bw, bh); cg.drawImage(dcv, bx0, by0, bw, bh, 0, 0, bw, bh);
+      c.ox = bx0; c.oy = by0; c.frame = digi.frame; c.key = (opt.tint || '') + '|' + (opt.box || '');
+    }
   }
-  digi.AX = DAX; digi.AY = DAY; digi.W = DW; digi.H = DH;
+  digi.AX = DAX; digi.AY = DAY; digi.W = DW; digi.H = DH; digi.frame = 0;
 
   // world position of a joint (for attaching effects)
   function jointWorld(f, p, name) {

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.1 (2026-11-25)
+
+Faster on phones (about 75% more frames per second with the CPU slowed 5x in testing). Looks and plays the same.
+
+- The film grain is two pre-made noise layers drawn over the frame instead of reading back and rewriting every pixel, so the game canvas stays on the GPU.
+- Each fighter's digitized sprite is cached and redrawn every other frame, the two fighters on alternating frames (every frame during fatalities). `RIG.digi` takes `cache`, `every` and `phase`.
+
 ## 1.1.0 (2026-11-25)
 
 New features for POTUS Kombat. Everything is optional: a game written for 1.0.0 keeps working unchanged.

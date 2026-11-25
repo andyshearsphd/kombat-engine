@@ -3,7 +3,7 @@
 'use strict';
 (() => {
   const cv = document.getElementById('game');
-  const ctx = cv.getContext('2d', { willReadFrequently: true });
+  const ctx = cv.getContext('2d');
   const H = 240;
   let W = 480;
   const AW = STAGES.AW, FLOOR = STAGES.FLOOR, GRAV = 2300;
@@ -1341,7 +1341,9 @@
       R.digi(g, fx, fy + hop, gg => { f.fj = drawF(gg, 0); }, { box: [20, 0, 340, 330] });
     } else {
       f.fj = null;
-      R.digi(g, fx, fy + hop, gg => R.draw(gg, { def: f.def, d: f.d, x: fx, y: fy + hop, face: spun ? -f.face : f.face, t: f.t, st: f.st2 }, f.pose, ro), { box: [50, 20, 280, 310], tint: f.ro.ash ? [0.3, 0.3, 0.32] : f.ro.char ? [0.45, 0.35, 0.3] : f.slowT > 0 ? [0.78, 0.92, 1.25] : f.mirror ? [0.62, 0.66, 0.85] : null });
+      if (!f.dcache) f.dcache = {};
+      const every = game.phase === 'fatality' || f.state === 'script' ? 1 : 2, ph = f === p2 ? 1 : 0;
+      R.digi(g, fx, fy + hop, gg => R.draw(gg, { def: f.def, d: f.d, x: fx, y: fy + hop, face: spun ? -f.face : f.face, t: f.t, st: f.st2 }, f.pose, ro), { cache: f.dcache, every, phase: ph, box: [50, 20, 280, 310], tint: f.ro.ash ? [0.3, 0.3, 0.32] : f.ro.char ? [0.45, 0.35, 0.3] : f.slowT > 0 ? [0.78, 0.92, 1.25] : f.mirror ? [0.62, 0.66, 0.85] : null });
     }
     // the wounded keep bleeding
     if (!f.hidden && f.hp < 70 && Math.random() < (1 - f.hp / 70) * 0.25 && f.state !== 'script') { const hp = R.jointWorld(f, f.pose, Math.random() < 0.5 ? 'head' : 'chest'); FX.blood(hp[0], hp[1], 1, 0, 0.15); }
@@ -1358,17 +1360,14 @@
     g.restore();
   }
   // gritty faux-digitized look: grain + reduced color depth
-  const NOISE = new Int8Array(560 * 240 * 2);
-  for (let i = 0; i < NOISE.length; i++) NOISE[i] = ((Math.random() + Math.random() + Math.random() - 1.5) * 9) | 0;
-  function grit() {
-    const img = ctx.getImageData(0, 0, W, H), d = img.data, off = ((game.time * 12) | 0) % 2 ? 0 : 337;
-    for (let i = 0, j = off; i < d.length; i += 4, j++) {
-      const n = NOISE[j];
-      let r = d[i] + n, gg = d[i + 1] + n, b = d[i + 2] + n;
-      d[i] = (r < 0 ? 0 : r > 255 ? 255 : r) & 0xf8; d[i + 1] = (gg < 0 ? 0 : gg > 255 ? 255 : gg) & 0xf8; d[i + 2] = (b < 0 ? 0 : b > 255 ? 255 : b) & 0xf8;
-    }
-    ctx.putImageData(img, 0, 0);
-  }
+  // 1.1.1: the film grain is two pre-made noise layers laid over the frame (no pixel readback, so the canvas stays on the GPU)
+  const GRAIN = [0, 1].map(() => {
+    const c = document.createElement('canvas'); c.width = 560; c.height = 240;
+    const gx = c.getContext('2d'), img = gx.createImageData(560, 240), d = img.data;
+    for (let i = 0; i < d.length; i += 4) { const n = (Math.random() + Math.random() + Math.random() - 1.5) * 9; const v = n > 0 ? 255 : 0; d[i] = d[i + 1] = d[i + 2] = v; d[i + 3] = Math.min(255, Math.abs(n) * 2.4); }
+    gx.putImageData(img, 0, 0); return c;
+  });
+  function grit() { ctx.drawImage(GRAIN[((game.time * 12) | 0) % 2], 0, 0); }
   function drawWorld() {
     const g = ctx;
     g.save();
@@ -1746,6 +1745,7 @@
   function uiKey() { if (ui.length) { const b = ui[ui.length - 1]; ui = []; b.fn(); } }
 
   function render() {
+    R.digi.frame++;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
     if (screen === 'title') return renderTitle();
