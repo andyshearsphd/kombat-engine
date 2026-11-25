@@ -889,10 +889,11 @@
   // 1.1 command grabs: hold modes 'drain' (steal health), 'shake' (lift, shake, toss), 'stun' (loom over them until they wilt), 'pull' (reel in from range and slam)
   function updateCgrab(f, o, m, dt) {
     const [su, ac, rc] = m.t, R0 = (m.range || 46) * f.d.k;
-    if (!f.grabbed && f.mt >= su && f.mt < su + ac + 0.02) {
+    // 1.2.1: one catch per use. Releasing rewinds the clock into the grab window and the foe is left stunned (still grabbable), so without this a stun or drain hold re-grabbed forever.
+    if (!f.grabbed && !m.caught && f.mt >= su && f.mt < su + ac + 0.02) {
       const dist = (o.x - f.x) * f.face;
       if (dist > -6 && dist < R0 + halfW(o) && grounded(o) && !invuln(o) && (actionable(o) || o.state === 'hit')) {
-        f.grabbed = true; o.state = 'held'; o.heldBy = f; o.ht = 0; o.heldUp = m.hold !== 'pull'; o.hx0 = o.x; f.holdT = 0; o.move = null; SFX.punch();
+        m.caught = true; f.grabbed = true; o.state = 'held'; o.heldBy = f; o.ht = 0; o.heldUp = m.hold !== 'pull'; o.hx0 = o.x; f.holdT = 0; o.move = null; SFX.punch();
         if (m.hold === 'pull') { SFX.whoosh(); for (let i = 0; i < 6; i++) FX.puff(lerp(f.x, o.x, i / 6), FLOOR - 60 * f.d.k, 'rgba(230,220,190,0.6)', 1, 2); }
       }
     }
