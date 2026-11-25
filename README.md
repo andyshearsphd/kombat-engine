@@ -26,7 +26,7 @@ Everything is optional, so a game written for 1.0.0 keeps working unchanged. Ful
 | Game | Repo | Engine version |
 | --- | --- | --- |
 | Muncie Kombat | [andyshearsphd/Muncie-Kombat](https://github.com/andyshearsphd/Muncie-Kombat) ([play](https://andyshearsphd.github.io/Muncie-Kombat/)) | 1.1.1 |
-| POTUS Kombat | [andyshearsphd/POTUS-Kombat](https://github.com/andyshearsphd/POTUS-Kombat) | 1.1.1 |
+| POTUS Kombat | [andyshearsphd/POTUS-Kombat](https://github.com/andyshearsphd/POTUS-Kombat) | 1.1.2 |
 
 ## Controls
 

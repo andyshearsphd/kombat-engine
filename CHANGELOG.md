@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.2 (2026-11-25)
+
+Fixes for POTUS Kombat. Nothing changes for a game that doesn't use these features.
+
+- Throws: a slow throw (the `spin` style) no longer gets cut off by the throw move's timer, and a fighter left held by someone who has stopped holding them drops to the floor instead of hanging in mid-air.
+- Seated fighters lean at most part way forward, so standing throw poses no longer fold them over to the floor.
+- Seated fighters (`chair`) can now do the BACK, BACK + KICK wall move: the chair rides up the wall on its wheels, throwing sparks, and launches into a flying chair ram. The moves screen lists it as WALL RIDE FLYING CHAIR RAM.
+- Game tunes: the melody keeps its own place in the tune, so it starts from the first note after the drum intro instead of partway into the song, and comes back in where it left off after each drum break.
+
 ## 1.1.1 (2026-11-25)
 
 Faster on phones (about 75% more frames per second with the CPU slowed 5x in testing). Looks and plays the same.

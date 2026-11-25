@@ -154,6 +154,8 @@
     const d = f.d, L = d.thigh + d.shin;
     const q = Object.assign({}, p, { lF: [1.5, 1.5], lB: [1.42, 1.42] });
     if (!p.rot) { q.hy = 0; q.hyL = 0; q.hyA = L * 0.96 - seatH(d) + (p.hy || 0) * 0.25 * d.k; }
+    // 1.1.2: a seated body can't fold all the way over (standing throw and toss poses lean far forward)
+    if (!p.rot && p.lean != null) q.lean = Math.max(-0.5, Math.min(0.42, p.lean));
     return q;
   }
   function newFighter(def, side) {
@@ -533,7 +535,7 @@
       startMove(f, f.jabAlt ? MV.jab2 : MV.jab); return;
     }
     if (c.K) {
-      if (!f.def.noMatrix && !f.def.chair && motion(f, ['B', 'B'], 0.9)) { f.hist = []; startWallrun(f); return; }
+      if (!f.def.noMatrix && motion(f, ['B', 'B'], 0.9)) { f.hist = []; startWallrun(f); return; }
       if (D) { startMove(f, MV.sweep); return; }
       if (B) { startMove(f, MV.round); return; }
       startMove(f, MV.kick); return;
@@ -712,7 +714,12 @@
       case 'down': f.vx *= 1 - dt * (f.skid > 0 ? 2.5 : 6); if (f.skid > 0) { f.skid -= dt; if (Math.random() < 0.6) FX.dust(f.x, FLOOR, 1); if (Math.random() < 0.3) FX.blood(f.x, FLOOR - 3, 1, 0, 0.3); } if (f.dead && !f.finishing) break; if (f.st > (f.finishing ? 0.9 : 0.7)) { f.state = 'getup'; f.st = 0; } break;
       case 'getup': if (f.st > 0.35) { f.state = 'idle'; f.stomped = false; } break;
       case 'attack': updateAttack(f, o, dt); break;
-      case 'held': break;
+      case 'held': {
+        // 1.1.2 safety net: if whoever was holding us stopped (interrupted, timed out), drop to the floor instead of hanging in the air
+        const h = f.heldBy;
+        if (!h || !h.grabbed || (h.state !== 'attack' && h.state !== 'script')) { f.heldUp = false; f.wadHeld = false; f.spin = 0; launch(f, 0, -60); }
+        break;
+      }
       case 'dizzy': f.vx = 0; break;
       case 'win': f.vx = 0; winFx(f, dt); break;
     }
@@ -772,7 +779,8 @@
           if (o.state === 'air' && o.hp <= 0 && !o.finishing && game.phase !== 'fight') o.dead = true;
         }
       }
-      if (f.mt >= su + ac + rc) { f.state = 'idle'; f.grabbed = false; }
+      // 1.1.2: a slow throw (spin) can outlast the move's timer; wait for it instead of dropping the foe mid-air
+      if (f.mt >= su + ac + rc && !(f.grabbed && o.state === 'held' && f.mt < su + ac + rc + 1.2)) { f.state = 'idle'; f.grabbed = false; }
       return;
     }
     if (m.cgrab) { updateCgrab(f, o, m, dt); return; }
@@ -813,7 +821,9 @@
     if (k === 'wallrun') {
       const run = 0.16, up = 0.42;
       if (f.mt < run) { f.x = lerp(f.wx0, f.wallX, f.mt / run); f.wph = (f.wph || 0) + dt * 22; }
-      else if (f.mt < up) { const u = (f.mt - run) / (up - run); f.x = f.wallX; f.y = FLOOR - u * 62 * f.d.k; f.wph = (f.wph || 0) + dt * 26; if (Math.random() < 0.4) FX.dust(f.wallX - f.wallFace * 6, f.y, 1); }
+      else if (f.mt < up) { const u = (f.mt - run) / (up - run); f.x = f.wallX; f.y = FLOOR - u * 62 * f.d.k; f.wph = (f.wph || 0) + dt * 26; if (Math.random() < 0.4) FX.dust(f.wallX - f.wallFace * 6, f.y, 1);
+        // 1.1.2: a chair rides up the wall on its wheels, throwing sparks and leaving tread marks
+        if (f.def.chair && Math.random() < 0.5) FX.spark(f.wallX - f.wallFace * 4, f.y - rnd(0, 20), '#ffd080', 2); }
       else {
         f.face = f.wallFace; f.move = null; f.state = 'jump'; f.vy = -300; f.vx = clamp((o.x - f.x) / 0.5, -460, 460);
         f.airAtk = MV.mkick; f.at = 0; f.airHit = false; f.hangUsed = true; game.slow = Math.max(game.slow || 0, 0.35); SFX.whoosh(); SFX.kick();
@@ -1614,7 +1624,7 @@
     const rows = [
       ['PUNCH', 'Jab (tap again for a combo)', 0], ['DOWN + PUNCH', 'Uppercut', 0], ['TOWARD + PUNCH (close)', TH[def.throw] || 'Suplex', 0], ['BACK + PUNCH (close)', 'Wad Toss', 0],
       ['KICK', def.chair ? 'Chair ram' : 'Kick', 0], ['DOWN + KICK', 'Sweep', 0], ['BACK + KICK', 'Spinning back kick', 0], ['UP', 'Jump (punch or kick in the air)', 0], ['BLOCK (hold)', 'Block (hold DOWN too to block low)', 0],
-      ['BLOCK + UP', 'BULLET DODGE (counters if it dodges)', 2], def.chair ? null : ['BACK, BACK + KICK', 'WALL RUN FLYING KICK', 2], ['IN THE AIR: DOWN + PUNCH', 'HANG TIME', 2],
+      ['BLOCK + UP', 'BULLET DODGE (counters if it dodges)', 2], ['BACK, BACK + KICK', def.chair ? 'WALL RIDE FLYING CHAIR RAM' : 'WALL RUN FLYING KICK', 2], ['IN THE AIR: DOWN + PUNCH', 'HANG TIME', 2],
       ...def.specials.map(sp => [sp.label, sp.name, 1]),
       ...def.fatalList.map(fs => ['FINISH: ' + fs.label, 'FATALITY: ' + fs.name, 1]),
       pits.length ? ['FINISH: DOWN + PUNCH', 'STAGE FATALITY at ' + (pits.length > 1 ? pits.slice(0, -1).join(', ') + ' or ' + pits[pits.length - 1] : pits[0]), 1] : null,

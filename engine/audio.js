@@ -148,7 +148,8 @@ const SFX = (() => {
       if (s === 4 || s === 12) DR.clank(t);
     }
     if (menu || sec !== 'A') {
-      const L = T.steps[i % T.steps.length];
+      // 1.1.2: the melody keeps its own place, so it starts at the top after the drum intro and never skips a phrase
+      const L = T.steps[(MU.mstep++) % T.steps.length];
       if (L) { const f = hz(L[0] + MU.tr), d = sd * L[1] * 0.92; mt(t, f, d, 'square', menu ? 0.035 : 0.05, { lp: 3200, echo: 1, att: 0.01 }); mt(t, f, d, 'sawtooth', menu ? 0.02 : 0.035, { det: 9, lp: 1800, echo: 1, att: 0.02 }); if (!menu) mt(t, f / 2, d, 'sawtooth', 0.03, { lp: 1200, att: 0.02 }); }
     }
   }
@@ -156,7 +157,7 @@ const SFX = (() => {
     if (!ac) return;
     const T = name === 'fight' && TUNES && tune != null ? TUNES[((tune % TUNES.length) + TUNES.length) % TUNES.length] : name === 'menu' ? MENU : null;
     if (MU.track === name && MU.tr === tr && MU.tune === T) return;
-    MU.track = name; MU.tr = tr; MU.tune = T; MU.step = 0; MU.next = ac.currentTime + 0.08;
+    MU.track = name; MU.tr = tr; MU.tune = T; MU.step = 0; MU.mstep = 0; MU.next = ac.currentTime + 0.08;
     if (!MU.timer) MU.timer = setInterval(() => {
       if (!MU.track || !ac || muted) { if (ac) MU.next = ac.currentTime + 0.05; return; }
       const T2 = MU.tune, sd = 60 / (T2 && T2.bpm ? T2.bpm : MU.track === 'fight' ? 132 : 92) / 4;
