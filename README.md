@@ -10,8 +10,8 @@ A game supplies the content: its fighters, arenas, fatalities, victory poses, ti
 
 | Game | Repo | Engine version |
 | --- | --- | --- |
-| Muncie Kombat | [andyshearsphd/Muncie-Kombat](https://github.com/andyshearsphd/Muncie-Kombat) ([play](https://andyshearsphd.github.io/Muncie-Kombat/)) | 1.0.0 |
-| POTUS Kombat | In design | |
+| Muncie Kombat | [andyshearsphd/Muncie-Kombat](https://github.com/andyshearsphd/Muncie-Kombat) ([play](https://andyshearsphd.github.io/Muncie-Kombat/)) | 1.1.0 |
+| POTUS Kombat | [andyshearsphd/POTUS-Kombat](https://github.com/andyshearsphd/POTUS-Kombat) | 1.1.0 |
 
 ## Controls
 
@@ -21,7 +21,7 @@ Every game on the engine plays the same way. On a phone: a joystick on the left,
 | --- | --- |
 | PUNCH | Jab (tap again for a combo) |
 | DOWN + PUNCH | Uppercut |
-| TOWARD + PUNCH (close) | Suplex |
+| TOWARD + PUNCH (close) | Throw (suplex, or the fighter's own throw) |
 | BACK + PUNCH (close) | Wad toss across the arena |
 | KICK | Kick |
 | DOWN + KICK | Sweep |
@@ -31,9 +31,12 @@ Every game on the engine plays the same way. On a phone: a joystick on the left,
 | BLOCK + UP | Bullet dodge (counters if it dodges) |
 | BACK, BACK + KICK | Wall run flying kick |
 | In the air: DOWN + PUNCH | Hang time |
-| BACK, FORWARD + PUNCH | The fighter's projectile special |
-| DOWN, FORWARD + KICK | The fighter's second special |
-| At FINISH: DOWN, DOWN + PUNCH | The fighter's fatality |
+| BACK, FORWARD + PUNCH | Special 1 |
+| DOWN, FORWARD + KICK | Special 2 |
+| DOWN, BACK + PUNCH | Special 3 (fighters who have one) |
+| At FINISH: DOWN, DOWN + PUNCH | Fatality 1 |
+| At FINISH: FORWARD, FORWARD + KICK | Fatality 2 (fighters who have one) |
+| At FINISH: BACK, BACK + PUNCH | Fatality 3 (fighters who have one) |
 | At FINISH in an arena with a pit: DOWN + PUNCH | Stage fatality |
 
 Jumping on a downed opponent stomps them. Matches are best of three rounds. The CPU always performs its fatality when it wins.
@@ -118,9 +121,35 @@ Optional fields the engine reads from a fighter:
 | `skull: 'type'`, `skullK` | Skull shape in skeleton fatalities: human (default), `devil`, `hippo`, `cat`, `raccoon`, `muskrat`, `goose`, `cardinal`, `turkey` |
 | `portrait: [x, y, scale]` | Head placement in select-screen portraits |
 
+Specials and fatalities (1.1):
+
+| Field | Effect |
+| --- | --- |
+| `sp1`, `sp2`, `sp3` | Specials: `{ kind, name, mod }`. Slot 1 is BACK, FORWARD + PUNCH, slot 2 DOWN, FORWARD + KICK, slot 3 DOWN, BACK + PUNCH. `kind: 'proj'` throws `proj: { kind }`; any other kind is a move. `mod` overrides the move's numbers (`dmg`, `t`, `box`, `fx`, `vx`, `vy`, `range`, `hold`, `word`, `fire`, `sfx`). `ai: [min, max]` sets the distance the CPU uses it at |
+| `proj`, `sp2Mod` | The 1.0 way to write slot 1 and slot 2 tuning; still works |
+| `fatals: [{ id, name }]` | Up to three fatalities (slots DOWN, DOWN + PUNCH; FORWARD, FORWARD + KICK; BACK, BACK + PUNCH). The 1.0 fields `fatal` and `alt` still work |
+| `throw` | `suplex` (default), `hip`, `shoulder` or `spin` |
+| `chair: true` or `{ metal, tire, plate, spikes }` | Fights seated in an armored wheelchair: seated poses, chair ram for kicks, roll-over stomp, no wall run |
+
+Move kinds added in 1.1: `swing` (weapon strike; draw the weapon in `frontHand` when `st.move === 'swing'`), `rise` (rising uppercut, `mod.fire` for flames), `parry` (stops a hit or sends a projectile back; `mod.word` is the banner), `cgrab` (command grab; `mod.hold` is `drain`, `shake`, `stun` or `pull`, `mod.range` its reach). Hit effects: `stun`, `daze`, `blind`, `slow`, `knock`, `launch`, `trip`.
+
+While a fighter is attacking, `st.move` is the move kind, `st.mname` its name and `st.mt` its time, so drawing hooks can show weapons and props. `st.wheel` is the chair wheel angle.
+
 Projectile kinds (`proj.kind`): `poop`, `knife`, `hairball`, `card`, `bball`, `gust`, `can`, `wave`, `shards`, `feather`, `drumstick`, `spray`, `howl`, `book`, `notice`, `hellfire`, `oil`, `log`, `shimmer`, `teeth`.
 
-Second special kinds (`sp2.kind`): `rush`, `roll`, `slide`, `leap`, `cloud`, `blow`, `flurry`, `sneak`, `burrow`, `playdead`.
+Second special kinds (`sp2.kind`): `rush`, `roll`, `slide`, `leap`, `cloud`, `blow`, `flurry`, `sneak`, `burrow`, `playdead`, plus the 1.1 kinds above.
+
+A game can define its own projectile kinds in `GAME.projectiles` (1.1):
+
+```js
+projectiles: {
+  rail: { speed: 320, vy: -60, grav: 300, dmg: 10, fx: 'knock', launch: [220, -320], draw(g, p, s, t) { /* origin at the projectile, s = direction */ } },
+  mortar: { sky: { count: 3, spread: 50, delay: 0.4, gap: 0.2, speed: 600 }, dmg: 8, fire: true, draw(g) { } },
+  hat: { boomerang: true, turn: 0.45, dmg: 7, draw(g, p, s, t) { } },
+}
+```
+
+Fields: `speed`, `vy`, `grav`, `bounce`, `dmg`, `w`, `h`, `y` (launch height), `low`, `trip`, `blind`, `slow`, `slowT`, `push`, `launch: [vx, vy]`, `fx`, `life`, `spread: [vy, ...]`, `burst: { n, gap, jitter }`, `sky: { count, spread, delay, gap, speed }`, `boomerang`, `turn`, `fire`, `ghost` (true or a color: a running double of the thrower), `cool`, `sfx`, `hitSfx`, `word`, `burstGibs`, `draw`.
 
 ### Arenas: `js/stages.js`
 
@@ -133,7 +162,7 @@ Second special kinds (`sp2.kind`): `rush`, `roll`, `slide`, `leap`, `cloud`, `bl
     fallback: 'oval',
     rotation: ['oval'],          // arenas dealt to regular ladder opponents
     single: ['oval'],            // arenas offered in single match
-    live(g, id, t) { },          // animated bits drawn every frame
+    live(g, id, t, info) { },    // animated bits drawn every frame; info.hype is 0 to 1 (crowds)
     drawBelow(g, W, t, kind) { }, // view from below for stage fatalities
   });
 })();
@@ -161,8 +190,18 @@ window.GAME = {
   mascot: 'hippo',                     // fighter whose head is on the title emblem
   toasty: { fighter: 'hippo', text: 'SQUARE SLICED!' },  // optional pop-in after uppercuts
   winPoses(K) { return { hippo: { fp(t) { }, fx(f, t) { }, draw(g, f, t) { } } }; },
+  // 1.1, all optional:
+  ladder: { mirror: true, endurance: 2 },  // a mirror match and two endurance rounds before the bosses
+  calls: { fight: 'FIGHT!', round: 'ROUND', finish: 'FINISH %s!', fatality: 'FATALITY', flawless: 'FLAWLESS VICTORY', wins: 'WINS', next: 'NEXT FIGHTER', mirror: 'MIRROR MATCH', endurance: 'ENDURANCE' },
+  voice: { pitch: 0.2, rate: 0.82, prefer: /Daniel|Fred/i, radio: false },  // radio adds old-broadcast crackle
+  muteKey: 'mk_muted',                 // where the mute setting is saved
+  tunes: [{ name, bpm: 132, notes: 'C5/2 C5/2 D5/2 E5/2 ...', chords: 'C G C F', chordSteps: 16 }],  // fight music; a fighter's tune: n picks one
+  menuTune: { name, bpm: 92, notes, chords },
+  projectiles: { },                    // see Fighters
 };
 ```
+
+Tune notes are note names with octave (`C5`, `F#4`, `Bb3`) or `r` for a rest, each with its length in sixteenth steps after a slash. Chords are one per `chordSteps` steps.
 
 ## Changing the engine
 
@@ -174,9 +213,7 @@ Game-specific content never goes in the engine. If a game needs new behavior, ad
 
 ### Known items for the next release
 
-- The moves screen names Muncie Kombat's pit arenas (BRIDGE, OVERPASS, McCULLOCH) in the stage fatality line; it should list the current game's arenas.
-- The select screen is a fixed 4 by 4 grid, so it fits 16 fighters. Bigger rosters need a scrolling or larger grid.
-- The mute setting is saved under one shared key, so muting one game mutes every game on the same site.
+None right now. Fixed in 1.1.0: the moves screen lists the current game's pit arenas, the select screen grows past 16 fighters, and each game can keep its own mute setting with `GAME.muteKey` (games that don't set it still share `mk_muted`).
 
 ## Testing
 

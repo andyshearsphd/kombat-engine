@@ -167,17 +167,19 @@ const STAGES = (() => {
     return (cache[id] = { id, name: DEFS[id].name, pit: DEFS[id].pit || false, back, front, bxOff: -206 });
   }
   function name(id) { return (DEFS[id] || DEFS[FALLBACK]).name; }
+  // arenas with a stage fatality (uppercut the loser off the edge), for the moves screen
+  function pits() { return Object.keys(DEFS).filter(id => DEFS[id].pit && !DEFS[id].bossOnly); }
   // animated bits drawn each frame on top of the far layer (back-layer coords)
-  function live(g, id, t) { if (liveFn) liveFn(g, id, t); }
+  function live(g, id, t, info) { if (liveFn) liveFn(g, id, t, info || {}); }
   // the view from below for a stage fatality
   function drawBelow(g, W, t, kind) { if (belowFn) belowFn(g, W, t, kind); }
 
   const api = {
-    AW: AWX, H, FLOOR, get, name, live, drawBelow,
+    AW: AWX, H, FLOOR, get, name, live, drawBelow, pits,
     ROTATION: [],   // arenas the ladder deals out to regular opponents
     SINGLE: [],     // arenas offered in single match
     kit: { R, PI, H, FLOOR, AWX, BW, CX, FY, VY, rand, rr, mk, shade, setSeed: v => { seed = v; }, vg, hgf, glow, shadowRect, speckle, grime, wall, bricks, stucco, stones, win, moon, stars, clouds, fog, treeline, tree, lamp, flag, vignette, pfloor, digitize },
-    // o: { defs: { id: { name, draw(B, F), pit } }, fallback, rotation: [ids], single: [ids], live(g, id, t), drawBelow(g, W, t, kind), extra: {} }
+    // o: { defs: { id: { name, draw(B, F), pit } }, fallback, rotation: [ids], single: [ids], live(g, id, t, info: { hype }), drawBelow(g, W, t, kind), extra: {} }
     define(o) {
       DEFS = o.defs; FALLBACK = o.fallback || Object.keys(DEFS)[0];
       liveFn = o.live || null; belowFn = o.drawBelow || null;

@@ -1,8 +1,10 @@
 // Kombat Engine: synthesized sound effects and a deep announcer voice (no audio files)
 'use strict';
 const SFX = (() => {
-  let ac = null, master = null, muted = false, voice = null;
-  try { muted = localStorage.getItem('mk_muted') === '1'; } catch (e) {}
+  let ac = null, master = null, muted = false, voice = null, KEY = 'mk_muted';
+  try { muted = localStorage.getItem(KEY) === '1'; } catch (e) {}
+  // 1.1: each game can keep its own mute setting (GAME.muteKey)
+  function setKey(k) { KEY = k; try { muted = localStorage.getItem(KEY) === '1'; } catch (e) {} if (master) master.gain.value = muted ? 0 : 0.55; }
   function unlock() {
     if (!ac) {
       const AC = window.AudioContext || window.webkitAudioContext;
@@ -11,7 +13,7 @@ const SFX = (() => {
     }
     if (ac && ac.state === 'suspended') ac.resume();
   }
-  function setMuted(m) { muted = m; try { localStorage.setItem('mk_muted', m ? '1' : '0'); } catch (e) {} if (master) master.gain.value = m ? 0 : 0.55; if (m && window.speechSynthesis) speechSynthesis.cancel(); }
+  function setMuted(m) { muted = m; try { localStorage.setItem(KEY, m ? '1' : '0'); } catch (e) {} if (master) master.gain.value = m ? 0 : 0.55; if (m && window.speechSynthesis) speechSynthesis.cancel(); }
   const now = () => ac.currentTime;
   function tone(freq, dur, type = 'square', vol = 0.3, slide = 0, delay = 0) {
     if (!ac || muted) return;
@@ -30,15 +32,25 @@ const SFX = (() => {
     g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + attack); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
     s.connect(f); f.connect(g); g.connect(master); s.start(t, Math.random()); s.stop(t + dur + 0.05);
   }
-  function say(text, pitch = 0.2, rate = 0.82) {
+  // the announcer: GAME.voice = { pitch, rate, prefer: /voice name regex/, radio: true } (radio adds old-broadcast crackle and hum)
+  const VO = { pitch: 0.2, rate: 0.82, prefer: /Daniel|Fred|Alex|Male|Google UK English Male/i, radio: false };
+  function voiceCfg(o) { Object.assign(VO, o); voice = null; }
+  function crackle(dur) {
+    if (!ac || muted) return;
+    noise(dur, 0.035, 2600, 0.6, 'bandpass', 0, 0.05);
+    tone(60, dur, 'sine', 0.025); tone(120, dur, 'sine', 0.012);
+    for (let i = 0; i < dur * 16; i++) noise(0.012, 0.18 + Math.random() * 0.2, 3000 + Math.random() * 3000, 1, 'highpass', Math.random() * dur);
+  }
+  function say(text, pitch = VO.pitch, rate = VO.rate) {
     if (muted || !window.speechSynthesis) return;
     try {
       speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      if (!voice) { const vs = speechSynthesis.getVoices(); voice = vs.find(v => /en-(US|GB)/.test(v.lang) && /Daniel|Fred|Alex|Male|Google UK English Male/i.test(v.name)) || vs.find(v => /^en/.test(v.lang)) || null; }
+      if (!voice) { const vs = speechSynthesis.getVoices(); voice = vs.find(v => /en-(US|GB)/.test(v.lang) && VO.prefer.test(v.name)) || vs.find(v => /^en/.test(v.lang)) || null; }
       if (voice) u.voice = voice;
       u.pitch = pitch; u.rate = rate; u.volume = 1;
       speechSynthesis.speak(u);
+      if (VO.radio) crackle(0.35 + text.length * 0.07 / rate);
     } catch (e) {}
   }
 
@@ -106,22 +118,58 @@ const SFX = (() => {
     if (s === 8 && bar % 2) DR.anvil(t);
     if (s % 4 === 2) mt(t, hz(62 + r + CH[bar % 4][(s >> 2) % 3]), sd * 3, 'triangle', 0.04, { echo: 1 });
   }
-  function music(name, tr = 0) {
+  // ---------- 1.1: game tunes played over the industrial kit ----------
+  // tune: { name, bpm, notes: 'E4/2 D4/2 r/4 ...' (note or r, '/' length in 16th steps), chords: 'C G Am F' (one per chordSteps, default 16) }
+  const NOTE = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+  function midi(n) { const m = /^([A-G])([#b]?)(-?\d)$/.exec(n); if (!m) return null; return 12 * (+m[3] + 1) + NOTE[m[1]] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0); }
+  function compile(t) {
+    if (t.steps) return t;
+    const steps = [];
+    for (const tok of t.notes.trim().split(/\s+/)) { const [n, l] = tok.split('/'), len = +(l || 2), m = n === 'r' ? null : midi(n); steps.push(m == null ? null : [m, len]); for (let i = 1; i < len; i++) steps.push(null); }
+    const chords = t.chords.trim().split(/\s+/).map(c => { const m = /^([A-G])([#b]?)(m?)/.exec(c); return { pc: (NOTE[m[1]] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0) + 12) % 12, min: !!m[3] }; });
+    return Object.assign(t, { steps, ch: chords, cs: t.chordSteps || 16 });
+  }
+  let TUNES = null, MENU = null;
+  function setTunes(list, menu) { TUNES = list ? list.map(compile) : null; MENU = menu ? compile(menu) : null; }
+  function tuneStep(T, i, t, sd, menu) {
+    const s = i & 15, bar = i >> 4, sec = menu ? 'M' : FORM[(bar >> 1) % FORM.length], c = T.ch[Math.floor(i / T.cs) % T.ch.length], r = c.pc + MU.tr;
+    if (!menu) {
+      if (sec !== 'D' && KICK[s]) DR.kick(t);
+      if (sec !== 'A' && SNARE[s]) DR.snare(t);
+      if (s % 2 === 1 || sec === 'C') DR.hat(t);
+      if (sec !== 'A' && CLANK[s]) DR.clank(t);
+      if (s === 0 && bar % 8 === 0) DR.anvil(t);
+      const bn = 36 + ((r % 12) + 12) % 12 + BASS[s];
+      mt(t, hz(bn), sd * 0.9, 'sawtooth', 0.15, { lp: 1400, lp2: 220, q: 6 }); mt(t, hz(bn - 12), sd * 0.9, 'square', 0.05, { lp: 500 });
+      if (s === 0 || s === 8) for (const n of c.min ? [0, 3, 7] : [0, 4, 7]) mt(t, hz(60 + ((r % 12) + 12) % 12 + n), sd * 6, 'sawtooth', 0.03, { lp: 2200, lp2: 600, det: (n % 2 ? 7 : -7) });
+    } else {
+      if (s === 0) { mt(t, hz(36 + ((r % 12) + 12) % 12), sd * 16, 'sawtooth', 0.1, { lp: 300, q: 8, att: 0.3 }); }
+      if (s === 0 || s === 10) DR.kick(t);
+      if (s === 4 || s === 12) DR.clank(t);
+    }
+    if (menu || sec !== 'A') {
+      const L = T.steps[i % T.steps.length];
+      if (L) { const f = hz(L[0] + MU.tr), d = sd * L[1] * 0.92; mt(t, f, d, 'square', menu ? 0.035 : 0.05, { lp: 3200, echo: 1, att: 0.01 }); mt(t, f, d, 'sawtooth', menu ? 0.02 : 0.035, { det: 9, lp: 1800, echo: 1, att: 0.02 }); if (!menu) mt(t, f / 2, d, 'sawtooth', 0.03, { lp: 1200, att: 0.02 }); }
+    }
+  }
+  function music(name, tr = 0, tune = null) {
     if (!ac) return;
-    if (MU.track === name && MU.tr === tr) return;
-    MU.track = name; MU.tr = tr; MU.step = 0; MU.next = ac.currentTime + 0.08;
+    const T = name === 'fight' && TUNES && tune != null ? TUNES[((tune % TUNES.length) + TUNES.length) % TUNES.length] : name === 'menu' ? MENU : null;
+    if (MU.track === name && MU.tr === tr && MU.tune === T) return;
+    MU.track = name; MU.tr = tr; MU.tune = T; MU.step = 0; MU.next = ac.currentTime + 0.08;
     if (!MU.timer) MU.timer = setInterval(() => {
       if (!MU.track || !ac || muted) { if (ac) MU.next = ac.currentTime + 0.05; return; }
-      const sd = 60 / (MU.track === 'fight' ? 132 : 92) / 4;
+      const T2 = MU.tune, sd = 60 / (T2 && T2.bpm ? T2.bpm : MU.track === 'fight' ? 132 : 92) / 4;
       while (MU.next < ac.currentTime + 0.14) {
-        (MU.track === 'fight' ? fightStep : menuStep)(MU.step, MU.next, sd);
+        if (T2) tuneStep(T2, MU.step, MU.next, sd, MU.track !== 'fight');
+        else (MU.track === 'fight' ? fightStep : menuStep)(MU.step, MU.next, sd);
         MU.step++; MU.next += sd;
       }
     }, 30);
   }
   function stopMusic() { MU.track = null; }
   const S = {
-    unlock, setMuted, isMuted: () => muted, say, music, stopMusic,
+    unlock, setMuted, isMuted: () => muted, say, music, stopMusic, setKey, voice: voiceCfg, setTunes,
     whoosh: () => noise(0.12, 0.12, 900, 0.7, 'bandpass', 0, 0.02, 2400),
     punch: () => { noise(0.1, 0.45, 500, 0.8, 'lowpass'); tone(120, 0.1, 'sine', 0.4, -60); },
     kick: () => { noise(0.14, 0.5, 380, 0.8, 'lowpass'); tone(90, 0.14, 'sine', 0.45, -40); },

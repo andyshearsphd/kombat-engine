@@ -147,6 +147,21 @@ const KIT = (() => {
 
   // fighters: playable, in select-screen order; bosses: ladder order (the last is the final boss)
   // o.front: { id: front-view victory pose parts }, o.portrait: { id: [x, y, scale] } head placement in portraits
+  // special move slots: 1 = BACK, FORWARD + PUNCH, 2 = DOWN, FORWARD + KICK, 3 = DOWN, BACK + PUNCH
+  const SLOTS = [{ motion: ['B', 'F'], btn: 'P', label: 'BACK, FORWARD + PUNCH' }, { motion: ['D', 'F'], btn: 'K', label: 'DOWN, FORWARD + KICK' }, { motion: ['D', 'B'], btn: 'P', label: 'DOWN, BACK + PUNCH' }];
+  // fatality slots: 1 = DOWN, DOWN + PUNCH, 2 = FORWARD, FORWARD + KICK, 3 = BACK, BACK + PUNCH
+  const FSLOTS = [{ motion: ['D', 'D'], btn: 'P', label: 'DOWN, DOWN + PUNCH' }, { motion: ['F', 'F'], btn: 'K', win: 0.6, label: 'FORWARD, FORWARD + KICK' }, { motion: ['B', 'B'], btn: 'P', label: 'BACK, BACK + PUNCH' }];
+  // a fighter's specials: sp1/sp2/sp3 ({ kind, name, ... }); the 1.0 fields proj and sp2 still work
+  function specials(f) {
+    const s1 = f.sp1 || (f.proj ? { kind: 'proj', name: f.proj.name, proj: f.proj } : null);
+    const s2 = f.sp2 ? Object.assign({}, f.sp2, f.sp2Mod ? { mod: Object.assign({}, f.sp2.mod, f.sp2Mod) } : null) : null;
+    return [s1, s2, f.sp3 || null].map((s, i) => s && Object.assign({ slot: i + 1 }, SLOTS[i], s)).filter(Boolean);
+  }
+  // a fighter's fatalities: fatals: [{ id, name }] or the 1.0 fields fatal and alt
+  function fatalities(f) {
+    const list = f.fatals || [f.fatal, f.alt].filter(Boolean);
+    return list.slice(0, 3).map((x, i) => Object.assign({ slot: i + 1 }, FSLOTS[i], x));
+  }
   function roster(FIGHTERS, BOSSES, o = {}) {
     const ALL = {}, FRONT = o.front || {}, PORT = o.portrait || {};
     for (const f of FIGHTERS.concat(BOSSES)) {
@@ -156,6 +171,10 @@ const KIT = (() => {
       for (const key in f.d) d[key] = f.d[key] * k;
       d.k = k;
       f.dk = d;
+      f.specials = specials(f);
+      f.fatalList = fatalities(f);
+      if (!f.fatal && f.fatalList[0]) f.fatal = f.fatalList[0];
+      if (!f.proj && f.sp1 && f.sp1.kind === 'proj') f.proj = f.sp1.proj;
     }
     return { FIGHTERS, BOSSES, ALL, eye };
   }

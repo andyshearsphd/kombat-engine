@@ -368,12 +368,14 @@ const RIG = (() => {
     }
     if (o.skeleton) { drawSkeleton(g, d, J, def, o); g.restore(); return J; }
     if (def.behind) def.behind(g, d, J, st);
+    if (def.chair) chair(g, d, J, st, def.chair, 'back');
     drawArm(g, d, def, J.AB, true, st);
     if (def.backHand) def.backHand(g, d, J, st);
     drawLeg(g, d, def, J.LB, true, o);
     if (def.tail) def.tail(g, d, J, st);
     if (def.bodyDraw) { const up = J.p.lF[0] - J.p.lean > 0.9; if (!up) drawLeg(g, d, def, J.LF, false, o); def.bodyDraw(g, d, J, st); if (up) drawLeg(g, d, def, J.LF, false, o); }
     else { drawTorso(g, d, def, J, st); drawLeg(g, d, def, J.LF, false, o); if (def.skirt) def.skirt(g, d, J, st); }
+    if (def.chair) chair(g, d, J, st, def.chair, 'front');
     if (def.neckDraw) def.neckDraw(g, d, J, st);
     else if (!o.noHead && !def.bodyDraw) seg(g, lerp2(J.sh, J.nk, -0.3), J.nk, d.shW * 0.36, d.shW * 0.32, def.col.neck || def.col.hand, (def.mat && def.mat.neck) || 'skin', { seed: 5 });
     if (!o.noHead && !o.noHeadDraw) drawHeadAt(g, f, J.nk[0], J.nk[1], J.p.lean + J.p.head * 0.5, o.headScale || 1, Object.assign({}, st, { jaw: J.p.jaw }));
@@ -384,6 +386,47 @@ const RIG = (() => {
     g.restore();
     return J;
   }
+  // ---------- 1.1: an armored wheelchair for seated fighters (def.chair: true or { metal, tire, plate, spikes }) ----------
+  function wheel(g, cx, cy, r, ang, o, far) {
+    const k = far ? -0.25 : 0;
+    ball(g, cx, cy, r, shade(o.tire, k));
+    g.fillStyle = shade(o.tire, -0.4 + k); g.beginPath(); g.arc(cx, cy, r * 0.84, 0, PI * 2); g.fill();
+    g.strokeStyle = shade(o.metal, 0.2 + k); g.lineWidth = r * 0.09; g.beginPath(); g.arc(cx, cy, r * 0.8, 0, PI * 2); g.stroke();
+    for (let i = 0; i < 8; i++) { const a = ang + i * PI / 4; line(g, cx, cy, cx + Math.cos(a) * r * 0.78, cy + Math.sin(a) * r * 0.78, shade(o.metal, -0.1 + k), r * 0.05); }
+    ball(g, cx, cy, r * 0.16, shade(o.metal, 0.1 + k));
+    g.strokeStyle = shade(o.metal, -0.3 + k); g.lineWidth = r * 0.05; g.beginPath(); g.arc(cx, cy, r * 0.62, 0, PI * 2); g.stroke();
+  }
+  function chair(g, d, J, st, spec, layer) {
+    const o = Object.assign({ metal: '#7a7e88', tire: '#1c1c1e', plate: '#4e535c', spikes: true }, spec === true ? {} : spec), k = d.k;
+    const h = J.hip, kn = J.LF.knee, an = J.LF.ank, r = d.shin * 0.55, wc = [h[0] - d.thigh * 0.12, -r], ang = -(st.wheel || 0);
+    if (layer === 'back') {
+      wheel(g, wc[0] - 3 * k, wc[1] - 2 * k, r * 0.98, ang, o, true);
+      // backrest and push handles
+      const b0 = [h[0] - d.back * 1.05, h[1] + 2 * k], b1 = [h[0] - d.back * 1.35, h[1] - d.torso * 0.72];
+      line(g, b0[0], b0[1], b1[0], b1[1], shade(o.metal, -0.2), 2.6 * k);
+      line(g, b1[0], b1[1], b1[0] - 6 * k, b1[1] - 1 * k, shade(o.metal, -0.1), 2.2 * k);
+      poly(g, [[b0[0] + 1.5 * k, b0[1] - 4 * k], [b1[0] + 2 * k, b1[1] + 4 * k], [b1[0] + 7 * k, b1[1] + 5 * k], [b0[0] + 7 * k, b0[1] - 5 * k]], shade(o.plate, -0.25));
+      // seat
+      poly(g, [[h[0] - d.back * 1.1, h[1] + 3 * k], [kn[0] + 2 * k, kn[1] + 3 * k], [kn[0] + 2 * k, kn[1] + 6 * k], [h[0] - d.back * 1.1, h[1] + 7 * k]], shade(o.plate, -0.15));
+      return;
+    }
+    // frame tubes down to the caster and footplate
+    line(g, h[0] - d.back * 0.9, h[1] + 7 * k, wc[0], wc[1], o.metal, 2.4 * k);
+    line(g, kn[0], kn[1] + 5 * k, an[0] + 2 * k, -3.5 * k, o.metal, 2.4 * k);
+    line(g, h[0] - d.back * 0.9, h[1] + 7 * k, kn[0] + 1 * k, kn[1] + 6 * k, shade(o.metal, 0.15), 2.6 * k);
+    // footplate, with a ram spike out front
+    poly(g, [[an[0] - 4 * k, -3 * k], [an[0] + 9 * k, -3 * k], [an[0] + 9 * k, -0.6 * k], [an[0] - 4 * k, -0.6 * k]], shade(o.plate, 0.1));
+    if (o.spikes) for (let i = 0; i < 2; i++) poly(g, [[an[0] + 9 * k, (-2.8 + i * 1.3) * k], [an[0] + 15 * k, (-2.2 + i * 1.3) * k], [an[0] + 9 * k, (-1.6 + i * 1.3) * k]], '#c8ccd4');
+    wheel(g, an[0] - 1 * k, -3.6 * k, 3.6 * k, ang * 4, o, false);
+    // the near wheel, then an armored fender over its top with rivets
+    wheel(g, wc[0], wc[1], r, ang, o, false);
+    g.beginPath(); g.arc(wc[0], wc[1], r * 1.12, PI * 1.08, PI * 1.92); g.arc(wc[0], wc[1], r * 0.86, PI * 1.92, PI * 1.08, true); g.closePath();
+    const gr = g.createLinearGradient(0, wc[1] - r * 1.1, 0, wc[1] - r * 0.6); gr.addColorStop(0, shade(o.plate, 0.35)); gr.addColorStop(1, shade(o.plate, -0.3)); g.fillStyle = gr; g.fill();
+    g.fillStyle = shade(o.metal, 0.45); for (let i = 0; i < 5; i++) { const a = PI * (1.14 + i * 0.18); g.fillRect(wc[0] + Math.cos(a) * r * 0.99 - 0.6, wc[1] + Math.sin(a) * r * 0.99 - 0.6, 1.2, 1.2); }
+    // armrest
+    line(g, h[0] - d.back * 0.6, h[1] - d.torso * 0.28, h[0] + d.thigh * 0.55, h[1] - d.torso * 0.28, shade(o.metal, 0.05), 2.2 * k);
+    line(g, h[0] + d.thigh * 0.5, h[1] - d.torso * 0.28, h[0] + d.thigh * 0.5, h[1] + 4 * k, o.metal, 1.8 * k);
+  }
   // ---------- front view: the fighter turns to face the camera for the victory pose ----------
   // fp: { hy, squat, spread, sway, head (tilt), jaw, aL/aR: [upper angle from straight down, outward +; elbow bend, + outward/up] }
   // L is screen left. Returns joints in world coordinates.
@@ -392,13 +435,23 @@ const RIG = (() => {
     const st = Object.assign({ t: f.t || 0, face: 1 }, f.st || {}, o);
     const sx = o.sx == null ? 1 : o.sx;
     g.save(); g.translate(f.x, f.y); g.scale(sx, 1); if (fp.sway) g.rotate(fp.sway);
-    const Lg = (d.thigh + d.shin) * 0.96, sq = (fp.squat || 0) * k, hipY = -Lg + sq + (fp.hy || 0) * k, hx = d.hipW * 0.55;
+    const Lg = (d.thigh + d.shin) * 0.96, sq = (fp.squat || 0) * k, hx = d.hipW * 0.55;
+    const hipY = def.chair ? -(d.shin + d.footH * 0.9 + 2 * k) + (fp.hy || 0) * k * 0.3 : -Lg + sq + (fp.hy || 0) * k;
     const sY = hipY - d.torso, nY = sY - (Fd.neck != null ? Fd.neck * k : d.neck * 0.2 - 1.5 * k), shx = Math.max(d.shW, d.chest * 0.8);
-    const legs = [-1, 1].map(sd => { const hip = [sd * hx, hipY], foot = [sd * (hx + (fp.spread ?? 4) * k), -d.footH * 0.4 - (sd < 0 ? fp.liftL || 0 : fp.liftR || 0) * k]; return { sd, hip, foot, knee: [(hip[0] + foot[0]) / 2 + sd * sq * 0.6, (hip[1] + foot[1]) / 2] }; });
+    const legs = def.chair ? [-1, 1].map(sd => ({ sd, hip: [sd * hx, hipY], knee: [sd * hx * 1.05, hipY + 2 * k], foot: [sd * hx * 1.15, -d.footH * 0.6] }))
+      : [-1, 1].map(sd => { const hip = [sd * hx, hipY], foot = [sd * (hx + (fp.spread ?? 4) * k), -d.footH * 0.4 - (sd < 0 ? fp.liftL || 0 : fp.liftR || 0) * k]; return { sd, hip, foot, knee: [(hip[0] + foot[0]) / 2 + sd * sq * 0.6, (hip[1] + foot[1]) / 2] }; });
     const armPts = (sd, a) => { const s0 = [sd * shx * 0.95, sY + d.shR * 0.6], el = [s0[0] + sd * Math.sin(a[0]) * d.upper, s0[1] + Math.cos(a[0]) * d.upper], b = a[0] + a[1], wr = [el[0] + sd * Math.sin(b) * d.fore, el[1] + Math.cos(b) * d.fore]; return { sd, s0, el, wr }; };
     const arms = { L: armPts(-1, fp.aL || [0.25, 0.1]), R: armPts(1, fp.aR || [0.25, 0.1]) };
     const G = { hipY, sY, nY, shx, hx, legs, arms, k };
     if (Fd.behind) Fd.behind(g, d, G, st);
+    if (def.chair) {
+      // the chair head on: big wheels edge on at the sides, seat, backrest, footplate
+      const o = Object.assign({ metal: '#7a7e88', tire: '#1c1c1e', plate: '#4e535c' }, def.chair === true ? {} : def.chair), r = d.shin * 0.55, wx = Math.max(shx, d.hipW * 1.2) + 4 * k;
+      poly(g, [[-wx + 2 * k, hipY - d.torso * 0.75], [wx - 2 * k, hipY - d.torso * 0.75], [wx - 3 * k, hipY + 2 * k], [-wx + 3 * k, hipY + 2 * k]], shade(o.plate, -0.35));
+      for (const sd of [-1, 1]) { g.fillStyle = o.tire; g.beginPath(); g.ellipse(sd * wx, -r, r * 0.22, r, 0, 0, PI * 2); g.fill(); g.strokeStyle = o.metal; g.lineWidth = 1.2 * k; g.beginPath(); g.ellipse(sd * wx, -r, r * 0.14, r * 0.8, 0, 0, PI * 2); g.stroke(); line(g, sd * wx, -r * 2.05, sd * wx, -r * 1.2, shade(o.plate, 0.3), 3 * k); }
+      poly(g, [[-wx, hipY + 3 * k], [wx, hipY + 3 * k], [wx, hipY + 7 * k], [-wx, hipY + 7 * k]], o.plate);
+      poly(g, [[-hx * 2, -3 * k], [hx * 2, -3 * k], [hx * 2, 0], [-hx * 2, 0]], shade(o.plate, 0.1));
+    }
     if (Fd.body) Fd.body(g, d, G, st);
     else {
       for (const L of legs) {
