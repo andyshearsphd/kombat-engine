@@ -8,7 +8,7 @@ A game supplies the content: its fighters, arenas, fatalities, victory poses, ti
 
 ## Versions
 
-The current version is in `VERSION`, and every release is a git tag (`v1.0.0`, ...). See `CHANGELOG.md`.
+The current version is in `VERSION`, and `CHANGELOG.md` lists what changed in each release.
 
 Each game keeps its own copy of the engine in an `engine/` folder, pinned to one release. A game only moves to a newer engine when someone copies that release in and tests it, so a change made for one game can never break another one by surprise.
 
