@@ -2,9 +2,24 @@
 
 The shared fighting game engine behind Muncie Kombat and the games that follow it: an early-90s arcade fighter for phones in landscape, written in plain JavaScript and the HTML canvas with no build step and no libraries.
 
-The engine handles everything that isn't specific to one game: the skeletal fighter rig and digitized look, controls (touch joystick, buttons, keyboard), moves, combos, throws, Matrix moves, projectiles, the CPU opponent, blood and gore, the camera, rounds and FINISH HIM, the fatality player, the arcade ladder, single match, menus, the HUD, the synthesized music, sound effects and announcer, and the add-to-home-screen card.
+The engine handles everything that isn't specific to one game: the skeletal fighter rig and digitized look, controls (touch joystick, buttons, keyboard), moves, combos, throws, Matrix moves, up to three specials and three fatalities per fighter, projectiles, the CPU opponent, blood and gore, the camera, rounds and FINISH HIM, the fatality player, the arcade ladder (with optional mirror match and endurance rounds), single match, menus, the HUD, the synthesized music, sound effects and announcer, and the add-to-home-screen card.
 
 A game supplies the content: its fighters, arenas, fatalities, victory poses, titles and icons.
+
+## What's new in 1.1.0
+
+Everything is optional, so a game written for 1.0.0 keeps working unchanged. Full details are in `CHANGELOG.md`.
+
+- Up to three specials and three fatalities per fighter. The CPU picks among a fighter's fatalities.
+- New special moves: weapon swings, rising uppercuts, parries (block a hit or knock a projectile back), and command grabs that drain, shake, stun or pull from long range.
+- Games can define their own projectiles: arcs, bounces, spreads, bursts, strikes from the sky, boomerangs, fire trails and ghost doubles. New hit effect: slow.
+- Throw styles per fighter: suplex, hip toss, shoulder throw or spin throw.
+- Seated fighters in an armored wheelchair, with seated poses, a chair ram and a roll-over stomp.
+- Ladder options: a mirror match and endurance rounds.
+- Announcer calls and voice can be changed per game, with an optional old-radio crackle. Games can add their own tunes over the industrial soundtrack.
+- Each game can keep its own mute setting.
+- Arenas can react to crowd hype.
+- The moves screen lists each fighter's own specials, fatalities and throw, and the current game's pit arenas. The select screen holds more than 16 fighters.
 
 ## Games on this engine
 
@@ -39,7 +54,7 @@ Every game on the engine plays the same way. On a phone: a joystick on the left,
 | At FINISH: BACK, BACK + PUNCH | Fatality 3 (fighters who have one) |
 | At FINISH in an arena with a pit: DOWN + PUNCH | Stage fatality |
 
-Jumping on a downed opponent stomps them. Matches are best of three rounds. The CPU always performs its fatality when it wins.
+Jumping on a downed opponent stomps them. Matches are best of three rounds. The CPU always performs a fatality when it wins, picking among the fighter's fatalities.
 
 
 ## Versions
@@ -120,6 +135,8 @@ Optional fields the engine reads from a fighter:
 | `vanish: true` | Disappears once a script marks it gone |
 | `skull: 'type'`, `skullK` | Skull shape in skeleton fatalities: human (default), `devil`, `hippo`, `cat`, `raccoon`, `muskrat`, `goose`, `cardinal`, `turkey` |
 | `portrait: [x, y, scale]` | Head placement in select-screen portraits |
+| `stats: { speed, power, weight, armor, frail }` | Walk and jump speed, damage dealt, how far hits knock them, and damage taken (`armor` and `frail` multiply it). Any `armor` value also lets them shrug off stun hits without flinching |
+| `tune: n` | With `GAME.tunes`, which tune plays when this fighter is the opponent (by index) |
 
 Specials and fatalities (1.1):
 
@@ -195,7 +212,7 @@ window.GAME = {
   calls: { fight: 'FIGHT!', round: 'ROUND', finish: 'FINISH %s!', fatality: 'FATALITY', flawless: 'FLAWLESS VICTORY', wins: 'WINS', next: 'NEXT FIGHTER', mirror: 'MIRROR MATCH', endurance: 'ENDURANCE' },
   voice: { pitch: 0.2, rate: 0.82, prefer: /Daniel|Fred/i, radio: false },  // radio adds old-broadcast crackle
   muteKey: 'mk_muted',                 // where the mute setting is saved
-  tunes: [{ name, bpm: 132, notes: 'C5/2 C5/2 D5/2 E5/2 ...', chords: 'C G C F', chordSteps: 16 }],  // fight music; a fighter's tune: n picks one
+  tunes: [{ name, bpm: 132, notes: 'C5/2 C5/2 D5/2 E5/2 ...', chords: 'C G C F', chordSteps: 16 }],  // fight music; an opponent's tune: n picks one, otherwise it rotates
   menuTune: { name, bpm: 92, notes, chords },
   projectiles: { },                    // see Fighters
 };
