@@ -6,6 +6,39 @@ The engine handles everything that isn't specific to one game: the skeletal figh
 
 A game supplies the content: its fighters, arenas, fatalities, victory poses, titles and icons.
 
+## Games on this engine
+
+| Game | Repo | Engine version |
+| --- | --- | --- |
+| Muncie Kombat | [andyshearsphd/Muncie-Kombat](https://github.com/andyshearsphd/Muncie-Kombat) ([play](https://andyshearsphd.github.io/Muncie-Kombat/)) | 1.0.0 |
+| POTUS Kombat | In design | |
+
+## Controls
+
+Every game on the engine plays the same way. On a phone: a joystick on the left, PUNCH, KICK and BLOCK buttons on the right. On a keyboard: arrows or WASD to move, J or Z to punch, K or X to kick, L, C or Shift to block, P or Escape to pause, Enter or Space on menus.
+
+| Input | Move |
+| --- | --- |
+| PUNCH | Jab (tap again for a combo) |
+| DOWN + PUNCH | Uppercut |
+| TOWARD + PUNCH (close) | Suplex |
+| BACK + PUNCH (close) | Wad toss across the arena |
+| KICK | Kick |
+| DOWN + KICK | Sweep |
+| BACK + KICK | Spinning back kick |
+| UP | Jump (punch or kick in the air) |
+| BLOCK (hold) | Block (hold DOWN too to block low) |
+| BLOCK + UP | Bullet dodge (counters if it dodges) |
+| BACK, BACK + KICK | Wall run flying kick |
+| In the air: DOWN + PUNCH | Hang time |
+| BACK, FORWARD + PUNCH | The fighter's projectile special |
+| DOWN, FORWARD + KICK | The fighter's second special |
+| At FINISH: DOWN, DOWN + PUNCH | The fighter's fatality |
+| At FINISH in an arena with a pit: DOWN + PUNCH | Stage fatality |
+
+Jumping on a downed opponent stomps them. Matches are best of three rounds. The CPU always performs its fatality when it wins.
+
+
 ## Versions
 
 The current version is in `VERSION`, and `CHANGELOG.md` lists what changed in each release.
@@ -42,6 +75,14 @@ Everything in `engine/` is loaded by a game's `index.html` with plain script tag
 | 13 | `engine/install.js` | engine | Add-to-home-screen card (`data-name`, `data-key`, `data-accent`, `data-icon`) |
 
 The page also needs the elements `engine/game.js` drives: `#game` (canvas), `#controls` with `#stickBase`/`#stickKnob`, `#bBlock`, `#bKick`, `#bPunch`, plus `#pauseBtn` and `#rotate`. Copy them from Muncie Kombat's `index.html`.
+
+## Starting a new game
+
+1. Make a new repo with GitHub Pages turned on.
+2. Copy Muncie Kombat's `index.html`, `manifest.webmanifest` and `icons/` into it, and change the title, the rotate-your-phone text, the `data-name`/`data-key`/`data-accent` on the `install.js` tag, and the icons.
+3. From this repo, run `tools/sync.sh ../New-Game` to copy the engine in.
+4. Write the four content files in `js/`, described below. Muncie Kombat's versions are complete working examples.
+5. Open it with `?auto&p=0&o=<opponent id>&s=<arena id>` to jump straight into a fight while building.
 
 ## What a game provides
 
@@ -122,6 +163,20 @@ window.GAME = {
   winPoses(K) { return { hippo: { fp(t) { }, fx(f, t) { }, draw(g, f, t) { } } }; },
 };
 ```
+
+## Changing the engine
+
+1. Make the change here in `engine/` and test it in one game (sync it in locally, don't commit there yet).
+2. Bump `VERSION` (1.0.1 for a fix, 1.1.0 for something new, 2.0.0 if games must change their content files) and add a `CHANGELOG.md` entry.
+3. Commit here, then sync, test and commit each game that should get the update, and update the table above.
+
+Game-specific content never goes in the engine. If a game needs new behavior, add it as a fighter field, a `GAME` setting or a registered script so other games can use it too.
+
+### Known items for the next release
+
+- The moves screen names Muncie Kombat's pit arenas (BRIDGE, OVERPASS, McCULLOCH) in the stage fatality line; it should list the current game's arenas.
+- The select screen is a fixed 4 by 4 grid, so it fits 16 fighters. Bigger rosters need a scrolling or larger grid.
+- The mute setting is saved under one shared key, so muting one game mutes every game on the same site.
 
 ## Testing
 
