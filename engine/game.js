@@ -1316,7 +1316,7 @@
     if (ph === 'tag' && game.pt > 1.5) tagIn();
     if (ph === 'roundend' && game.pt > 3.6) { game.round++; startRound(); return; }
     if (ph === 'matchend' && game.pt > 4.2) { endMatch(); return; }
-    if (ph === 'fatalend' && game.pt > 4.4) { endMatch(); return; }
+    if (ph === 'fatalend' && game.pt > 5.2) { endMatch(); return; }
     if (['fight', 'finish', 'finishwait'].includes(game.phase)) {
       const can = game.phase !== 'finishwait' || true;
       let c1 = { tok, P: game.time - p1.bufP < 0.14, K: game.time - p1.bufK < 0.14, B: btn.B };
@@ -1353,9 +1353,14 @@
     game.phase = 'fatalend'; game.pt = 0;
     if (game.loser.bossDie) { winText(w); setWin(w); return; }
     setWin(w); w.scriptPose = null;
-    banner(CALL.fatality, { size: 32, fill: 'blood', life: 4.4, y: 44, drip: 1, blood: 1, hold: 1.3, dock: { y: 36, size: 19 } });
-    say(spoken(CALL.fatality));
-    setTimeout(() => { banner(w.def.name + ' ' + CALL.wins, { size: 13, fill: 'gold', life: 3.1, y: 60 }); }, 1300);
+    // 1.3.2: the announcer calls the winner, then FATALITY, then FLAWLESS VICTORY if the winner took no damage
+    const flawless = w.dmgTaken <= 0;
+    banner(w.def.name + ' ' + CALL.wins, { size: 24, fill: 'gold', life: 4.8, y: 40, hold: 0.8, dock: { y: 30, size: 15 } });
+    setTimeout(() => banner(CALL.fatality, { size: 32, fill: 'blood', life: 3.6, y: 56, drip: 1, blood: 1, hold: 1.1, dock: { y: 50, size: 19 } }), 1300);
+    if (flawless) setTimeout(() => banner(CALL.flawless, { size: 12, fill: 'fire', y: 74, life: 2.4 }), 2700);
+    const lines = [w.def.name.replace("'", 'g').toLowerCase() + ' ' + spoken(CALL.wins), spoken(CALL.fatality)];
+    if (flawless) lines.push(spoken(CALL.flawless));
+    SFX.sayAll(lines);
   }
   function endMatch() {
     const won = game.winner === p1;

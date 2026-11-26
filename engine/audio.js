@@ -64,18 +64,28 @@ const SFX = (() => {
     const src = ac.createBufferSource(); src.buffer = b; src.connect(vgain); src.start(); curClip = src;
     if (VO.radio) crackle(b.duration);
   }
-  function say(text, pitch = VO.pitch, rate = VO.rate) {
-    if (CLIPS) { const key = slug(text); if (CB[key]) { playClip(key); return; } if (!CLIPS.list || CLIPS.list.has(key)) return; }
-    if (muted || !window.speechSynthesis) return;
+  // done (1.3.2): called once the line has finished, so lines can be chained with sayAll
+  function say(text, pitch = VO.pitch, rate = VO.rate, done) {
+    let called = false;
+    const fin = ms => { if (done) setTimeout(() => { if (!called) { called = true; done(); } }, ms); };
+    if (CLIPS) { const key = slug(text); if (CB[key]) { playClip(key); fin(CB[key].duration * 1000 + 80); return; } if (!CLIPS.list || CLIPS.list.has(key)) { fin(0); return; } }
+    if (muted || !window.speechSynthesis) { fin(0); return; }
     try {
       speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
+      // move on when the voice finishes, or after a generous estimate if the browser never says it finished
+      if (done) { u.onend = () => fin(60); fin((0.6 + text.length * 0.09 / rate) * 1000 + 700); }
       if (!voice) { const vs = speechSynthesis.getVoices(); voice = vs.find(v => /en-(US|GB)/.test(v.lang) && VO.prefer.test(v.name)) || vs.find(v => /^en/.test(v.lang)) || null; }
       if (voice) u.voice = voice;
       u.pitch = pitch; u.rate = rate; u.volume = 1;
       speechSynthesis.speak(u);
       if (VO.radio) crackle(0.35 + text.length * 0.07 / rate);
-    } catch (e) {}
+    } catch (e) { fin(0); }
+  }
+  // 1.3.2: several announcer lines in a row, each one waiting for the last to finish
+  function sayAll(lines, gap = 150) {
+    const next = i => { if (i < lines.length) say(lines[i], VO.pitch, VO.rate, () => setTimeout(() => next(i + 1), gap)); };
+    next(0);
   }
 
   // ---------- music: early-90s industrial fight loop, synthesized live ----------
@@ -194,7 +204,7 @@ const SFX = (() => {
   }
   function stopMusic() { MU.track = null; }
   const S = {
-    unlock, setMuted, isMuted: () => muted, say, setClips, music, stopMusic, setKey, voice: voiceCfg, setTunes,
+    unlock, setMuted, isMuted: () => muted, say, sayAll, setClips, music, stopMusic, setKey, voice: voiceCfg, setTunes,
     whoosh: () => noise(0.12, 0.12, 900, 0.7, 'bandpass', 0, 0.02, 2400),
     punch: () => { noise(0.1, 0.45, 500, 0.8, 'lowpass'); tone(120, 0.1, 'sine', 0.4, -60); },
     kick: () => { noise(0.14, 0.5, 380, 0.8, 'lowpass'); tone(90, 0.14, 'sine', 0.45, -40); },

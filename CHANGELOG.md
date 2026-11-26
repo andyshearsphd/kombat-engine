@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.2 (2026-11-26)
+
+- After a fatality the announcer calls the winner (`<name> wins`), then FATALITY, then FLAWLESS VICTORY (or the game's `GAME.calls.flawless`) if the winner took no damage that round. Each line waits for the one before it to finish, with recorded clips or text-to-speech. The banners appear in the same order, and the fatality screen holds a little longer so the last line isn't cut off.
+- `SFX.sayAll([lines])` plays announcer lines one after another; `SFX.say` takes an optional callback for when a line finishes.
+
 ## 1.3.1 (2026-11-26)
 
 - The CPU kips up at most twice per match, instead of on roughly half its knockdowns.
