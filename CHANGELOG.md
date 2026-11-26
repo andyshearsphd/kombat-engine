@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.3.0 (2026-11-26)
+
+Three new Matrix moves for every fighter (except those with `noMatrix`). The CPU uses them too. Nothing changes in a game's content files.
+
+- Burly Brawl Flurry (FORWARD, FORWARD + PUNCH): rush in, a slow-motion blur of fists, then a palm strike that sends the opponent across the arena.
+- Phase Dash (hold BLOCK, then tap FORWARD): blur straight through the opponent and come out behind them, untouchable while dashing. Holding forward and then blocking still just blocks. Once every 0.7 seconds.
+- Kip-Up Spin Kick (KICK while knocked down): spin up off the floor with a leg sweep that knocks the opponent down. Seated fighters spin the chair (KIP-UP CHAIR SPIN).
+- The moves screen lists all three.
+
 ## 1.2.1 (2026-11-25)
 
 - Command grabs (`cgrab`) catch only once per use. A `stun` or `drain` hold left the foe stunned and rewound the move into its grab window, so it grabbed again and again until the foe ran out of health (LBJ's Johnson Treatment, Jackson's Spoils System).

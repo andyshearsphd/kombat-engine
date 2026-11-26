@@ -6,7 +6,11 @@ The engine handles everything that isn't specific to one game: the skeletal figh
 
 A game supplies the content: its fighters, arenas, fatalities, victory poses, titles and icons.
 
-## What's new in 1.1.0
+## What's new in 1.3.0
+
+Three new Matrix moves that every fighter gets automatically (the CPU uses them too): the Burly Brawl Flurry, the Phase Dash and the Kip-Up Spin Kick. See Controls below. Full history in `CHANGELOG.md`.
+
+## What was new in 1.1.0
 
 Everything is optional, so a game written for 1.0.0 keeps working unchanged. Full details are in `CHANGELOG.md`.
 
@@ -25,8 +29,8 @@ Everything is optional, so a game written for 1.0.0 keeps working unchanged. Ful
 
 | Game | Repo | Engine version |
 | --- | --- | --- |
-| Muncie Kombat | [andyshearsphd/Muncie-Kombat](https://github.com/andyshearsphd/Muncie-Kombat) ([play](https://andyshearsphd.github.io/Muncie-Kombat/)) | 1.1.1 |
-| POTUS Kombat | [andyshearsphd/POTUS-Kombat](https://github.com/andyshearsphd/POTUS-Kombat) | 1.2.1 |
+| Muncie Kombat | [andyshearsphd/Muncie-Kombat](https://github.com/andyshearsphd/Muncie-Kombat) ([play](https://andyshearsphd.github.io/Muncie-Kombat/)) | 1.3.0 |
+| POTUS Kombat | [andyshearsphd/POTUS-Kombat](https://github.com/andyshearsphd/POTUS-Kombat) | 1.3.0 |
 
 ## Controls
 
@@ -46,6 +50,9 @@ Every game on the engine plays the same way. On a phone: a joystick on the left,
 | BLOCK + UP | Bullet dodge (counters if it dodges) |
 | BACK, BACK + KICK | Wall run flying kick |
 | In the air: DOWN + PUNCH | Hang time |
+| FORWARD, FORWARD + PUNCH | Burly Brawl Flurry: rush in, a slow-motion blur of fists, then a palm strike across the arena |
+| Hold BLOCK, then tap FORWARD | Phase Dash: blur through the opponent and come out behind them, untouchable while dashing |
+| KICK while knocked down | Kip-Up Spin Kick: spin up off the floor with a leg sweep (seated fighters spin the chair) |
 | BACK, FORWARD + PUNCH | Special 1 |
 | DOWN, FORWARD + KICK | Special 2 |
 | DOWN, BACK + PUNCH | Special 3 (fighters who have one) |
