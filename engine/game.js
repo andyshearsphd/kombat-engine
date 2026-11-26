@@ -374,6 +374,7 @@
   }
   function startMatch() {
     const oppDef = ladder.opps[ladder.rung], meta = (ladder.meta && ladder.meta[ladder.rung]) || {};
+    game.kipN = [0, 0];
     p1 = newFighter(ROSTER.FIGHTERS[ladder.pick], 0);
     p2 = newFighter(oppDef, 1); p2.mirror = !!meta.mirror;
     game.pairDef = meta.pair || null; game.firstDef = oppDef;
@@ -595,7 +596,9 @@
     if (game.phase !== 'fight' && game.phase !== 'finishwait') return out;
     // 1.3: decide once per knockdown whether to kip-up
     if ((f.state === 'down' || f.state === 'getup') && !f.dead && !f.def.noMatrix) {
-      if (!c.kipRoll) { c.kipRoll = 1; c.kipGo = Math.random() < 0.12 + lv * 0.45; c.kipAt = rnd(0.15, 0.45); }
+      // 1.3.1: at most two kip-ups per CPU per match, spread out over the knockdowns
+      const kn = game.kipN || (game.kipN = [0, 0]);
+      if (!c.kipRoll) { c.kipRoll = 1; c.kipGo = kn[f.side] < 2 && Math.random() < 0.18 + lv * 0.12; c.kipAt = rnd(0.15, 0.45); if (c.kipGo) kn[f.side]++; }
       if (c.kipGo && (f.state === 'getup' || f.st > c.kipAt)) out.K = true;
       return out;
     }

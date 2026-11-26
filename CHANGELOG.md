@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.1 (2026-11-26)
+
+- The CPU kips up at most twice per match, instead of on roughly half its knockdowns.
+
 ## 1.3.0 (2026-11-26)
 
 Three new Matrix moves for every fighter (except those with `noMatrix`). The CPU uses them too. Nothing changes in a game's content files.
