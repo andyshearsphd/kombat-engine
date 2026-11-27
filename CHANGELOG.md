@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.9.1 (2026-11-27)
+
+A clean-up. Nothing changes in a game's content files, and nothing plays differently except the first item.
+
+- The win, fatality and flawless banners and calls run on the game clock instead of the real clock, so they wait while the game is paused and stretch with slow motion. They are cleared when a new match starts.
+- Every `GAME` setting is listed with its default and a one-line note at the top of `engine/game.js`.
+- An arena with `pit: true` uses its own id as the stage fatality (it used to fall back to Muncie Kombat's `'bridge'`).
+- Removed dead code: an unused special-slot helper, an unused pause-menu variable, and the `gobble` sound no game used.
+- Shared helpers in place of repeated code: `RIG.M` holds `clamp`, `rnd`, `pick`, `lerp` and `ease` (they were copied into three files), plus small helpers in game.js for the announced name, facing the opponent, cooldown timing and the CPU's double tap.
+- Version stamps are gone from code comments (the history lives here), and the longest lines are wrapped. The README's settings section matches the code.
+
 ## 1.9.0 (2026-11-27)
 
 Corner traps are gone. These are on by default for every game; a game can tune them or switch any one off.

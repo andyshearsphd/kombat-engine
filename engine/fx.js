@@ -4,7 +4,7 @@ const FX = (() => {
   const R = RIG, PI = Math.PI;
   let FLOOR = 222;
   const parts = [], gibs = [], decals = [], props = [], screenDrops = [];
-  const rnd = (a, b) => a + Math.random() * (b - a);
+  const { rnd } = RIG.M;
 
   function reset() { parts.length = 0; gibs.length = 0; decals.length = 0; props.length = 0; screenDrops.length = 0; }
   function setFloor(y) { FLOOR = y; }

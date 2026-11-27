@@ -3,7 +3,7 @@
 const SFX = (() => {
   let ac = null, master = null, muted = false, voice = null, KEY = 'mk_muted';
   try { muted = localStorage.getItem(KEY) === '1'; } catch (e) {}
-  // 1.1: each game can keep its own mute setting (GAME.muteKey)
+  // each game can keep its own mute setting (GAME.muteKey)
   function setKey(k) { KEY = k; try { muted = localStorage.getItem(KEY) === '1'; } catch (e) {} if (master) master.gain.value = muted ? 0 : 0.55; }
   function unlock() {
     if (!ac) {
@@ -24,7 +24,7 @@ const SFX = (() => {
     g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
     o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.02);
   }
-  // 1.8.2: a real wolf howl. A breathy voice scoops up an octave, holds with a slow wobble, then sags away;
+  // a real wolf howl. A breathy voice scoops up an octave, holds with a slow wobble, then sags away;
   // a quieter upper voice and a little breath noise ride along.
   function wolfHowl(delay = 0) {
     if (!ac || muted) return;
@@ -60,7 +60,7 @@ const SFX = (() => {
     tone(60, dur, 'sine', 0.025); tone(120, dur, 'sine', 0.012);
     for (let i = 0; i < dur * 16; i++) noise(0.012, 0.18 + Math.random() * 0.2, 3000 + Math.random() * 3000, 1, 'highpass', Math.random() * dur);
   }
-  // ---------- 1.2: recorded announcer clips ----------
+  // ---------- recorded announcer clips ----------
   // GAME.voiceClips = 'voice/' : a folder holding manifest.json (a list of phrase slugs) and one .mp3 per slug.
   // Clips play through the game's own audio, so the announcer is heard wherever the music is.
   // Lines without a clip still go to the browser's text-to-speech.
@@ -82,8 +82,8 @@ const SFX = (() => {
     const src = ac.createBufferSource(); src.buffer = b; src.connect(vgain); src.start(); curClip = src;
     if (VO.radio) crackle(b.duration);
   }
-  // done (1.3.2): called once the line has finished, so lines can be chained with sayAll
-  // 1.8.1: lines wait their turn. A line asked for while another is still playing is queued instead of cutting it off;
+  // done: called once the line has finished, so lines can be chained with sayAll
+  // lines wait their turn. A line asked for while another is still playing is queued instead of cutting it off;
   // a queued line that has waited more than 2.5 seconds is dropped as stale (unless something is waiting on it).
   const VQ = []; let vbusy = false;
   function vfree() {
@@ -118,7 +118,7 @@ const SFX = (() => {
       if (VO.radio) crackle(0.35 + text.length * 0.07 / rate);
     } catch (e) { fin(0); }
   }
-  // 1.3.2: several announcer lines in a row, each one waiting for the last to finish
+  // several announcer lines in a row, each one waiting for the last to finish
   function sayAll(lines, gap = 150) {
     const next = i => { if (i < lines.length) say(lines[i], VO.pitch, VO.rate, () => setTimeout(() => next(i + 1), gap)); };
     next(0);
@@ -188,7 +188,7 @@ const SFX = (() => {
     if (s === 8 && bar % 2) DR.anvil(t);
     if (s % 4 === 2) mt(t, hz(62 + r + CH[bar % 4][(s >> 2) % 3]), sd * 3, 'triangle', 0.04, { echo: 1 });
   }
-  // ---------- 1.1: game tunes played over the industrial kit ----------
+  // ---------- game tunes played over the industrial kit ----------
   // tune: { name, bpm, notes: 'E4/2 D4/2 r/4 ...' (note or r, '/' length in 16th steps), chords: 'C G Am F' (one per chordSteps, default 16) }
   const NOTE = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
   function midi(n) { const m = /^([A-G])([#b]?)(-?\d)$/.exec(n); if (!m) return null; return 12 * (+m[3] + 1) + NOTE[m[1]] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0); }
@@ -218,9 +218,10 @@ const SFX = (() => {
       if (s === 4 || s === 12) DR.clank(t);
     }
     if (menu || sec !== 'A') {
-      // 1.1.2: the melody keeps its own place, so it starts at the top after the drum intro and never skips a phrase
+      // the melody keeps its own place, so it starts at the top after the drum intro and never skips a phrase
       const L = T.steps[(MU.mstep++) % T.steps.length];
-      if (L) { const f = hz(L[0] + MU.tr), d = sd * L[1] * 0.92; mt(t, f, d, 'square', menu ? 0.035 : 0.05, { lp: 3200, echo: 1, att: 0.01 }); mt(t, f, d, 'sawtooth', menu ? 0.02 : 0.035, { det: 9, lp: 1800, echo: 1, att: 0.02 }); if (!menu) mt(t, f / 2, d, 'sawtooth', 0.03, { lp: 1200, att: 0.02 }); }
+      if (L) { const f = hz(L[0] + MU.tr), d = sd * L[1] * 0.92; mt(t, f, d, 'square', menu ? 0.035 : 0.05, { lp: 3200, echo: 1, att: 0.01 });
+        mt(t, f, d, 'sawtooth', menu ? 0.02 : 0.035, { det: 9, lp: 1800, echo: 1, att: 0.02 }); if (!menu) mt(t, f / 2, d, 'sawtooth', 0.03, { lp: 1200, att: 0.02 }); }
     }
   }
   function music(name, tr = 0, tune = null) {
@@ -258,7 +259,6 @@ const SFX = (() => {
     squish: () => { noise(0.3, 0.4, 400, 3, 'bandpass', 0, 0.01, 150); tone(90, 0.3, 'sine', 0.25, -40); },
     shot: () => { noise(0.18, 0.55, 1800, 0.6, 'bandpass'); noise(0.06, 0.5, 5000, 0.6, 'highpass'); tone(110, 0.12, 'square', 0.25, -60); },
     yelp: () => { for (let i = 0; i < 4; i++) { tone(980, 0.09, 'triangle', 0.22, -380, i * 0.16); tone(1960, 0.06, 'sine', 0.05, -700, i * 0.16); } },
-    gobble: () => { for (let i = 0; i < 6; i++) tone(520 + (i % 2) * 140, 0.05, 'sawtooth', 0.18, -120, i * 0.055); },
     chirp: () => { tone(2600, 0.06, 'sine', 0.2, 1400); tone(3200, 0.08, 'sine', 0.16, -1200, 0.07); },
     slurp: () => { noise(0.5, 0.25, 600, 3, 'bandpass', 0, 0.02, 1800); tone(180, 0.5, 'sine', 0.12, 160); },
     honk: () => { tone(330, 0.22, 'sawtooth', 0.3, -40); tone(336, 0.22, 'square', 0.15, -40); },

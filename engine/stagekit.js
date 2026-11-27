@@ -46,7 +46,8 @@ const STAGES = (() => {
   function stucco(g, x, y, w, h, c) {
     g.fillStyle = c; g.fillRect(x, y, w, h);
     for (let i = 0; i < w * h / 90; i++) { g.fillStyle = rand() < 0.5 ? 'rgba(255,250,235,0.07)' : 'rgba(60,40,20,0.08)'; g.beginPath(); g.ellipse(x + rand() * w, y + rand() * h, rr(3, 10), rr(2, 6), 0, 0, PI * 2); g.fill(); }
-    for (let i = 0; i < w / 14; i++) { const sx = x + rand() * w, sy = y + rand() * h * 0.3, sl = rr(10, h * 0.7); const gr = g.createLinearGradient(0, sy, 0, sy + sl); gr.addColorStop(0, 'rgba(70,55,35,0.35)'); gr.addColorStop(1, 'rgba(70,55,35,0)'); g.fillStyle = gr; g.fillRect(sx, sy, rr(2, 6), sl); }
+    for (let i = 0; i < w / 14; i++) { const sx = x + rand() * w, sy = y + rand() * h * 0.3, sl = rr(10, h * 0.7); const gr = g.createLinearGradient(0, sy, 0, sy + sl);
+      gr.addColorStop(0, 'rgba(70,55,35,0.35)'); gr.addColorStop(1, 'rgba(70,55,35,0)'); g.fillStyle = gr; g.fillRect(sx, sy, rr(2, 6), sl); }
     g.strokeStyle = 'rgba(40,30,20,0.4)'; g.lineWidth = 0.6;
     for (let i = 0; i < w / 30; i++) { let px = x + rand() * w, py = y + rand() * h; g.beginPath(); g.moveTo(px, py); for (let j = 0; j < 4; j++) { px += rr(-6, 6); py += rr(3, 9); g.lineTo(px, py); } g.stroke(); }
     speckle(g, x, y, w, h, w * h / 6, 0.12, 0.08);
@@ -96,13 +97,16 @@ const STAGES = (() => {
   function treeline(g, y, n, c, h0, h1, w = BW, lit) {
     for (let i = 0; i < n; i++) {
       const x = rand() * w, h = rr(h0, h1);
-      for (let j = 0; j < 6; j++) { const cx = x + rr(-h, h) * 0.3, cy = y - h * rr(0.45, 0.9), r = h * rr(0.22, 0.38); g.fillStyle = shade(c, rr(-0.15, 0.05)); g.beginPath(); g.arc(cx, cy, r, 0, PI * 2); g.fill(); if (lit) { g.fillStyle = lit; g.beginPath(); g.arc(cx - r * 0.3, cy - r * 0.35, r * 0.45, 0, PI * 2); g.fill(); } }
+      for (let j = 0; j < 6; j++) { const cx = x + rr(-h, h) * 0.3, cy = y - h * rr(0.45, 0.9), r = h * rr(0.22, 0.38); g.fillStyle = shade(c, rr(-0.15, 0.05));
+        g.beginPath(); g.arc(cx, cy, r, 0, PI * 2); g.fill(); if (lit) { g.fillStyle = lit; g.beginPath(); g.arc(cx - r * 0.3, cy - r * 0.35, r * 0.45, 0, PI * 2); g.fill(); } }
       g.fillStyle = shade(c, -0.3); g.fillRect(x - 1.5, y - h * 0.4, 3, h * 0.4);
     }
   }
   function tree(g, x, y, h, c, lit) {
     g.fillStyle = '#140e0a'; g.beginPath(); g.moveTo(x - 3, y); g.lineTo(x - 1.5, y - h * 0.5); g.lineTo(x + 1.5, y - h * 0.5); g.lineTo(x + 3, y); g.fill();
-    for (let j = 0; j < 14; j++) { const cx = x + rr(-h, h) * 0.32, cy = y - h * rr(0.45, 0.95), r = h * rr(0.14, 0.26); g.fillStyle = shade(c, rr(-0.25, 0.05)); g.beginPath(); g.arc(cx, cy, r, 0, PI * 2); g.fill(); if (lit && rand() < 0.6) { g.fillStyle = lit; g.beginPath(); g.arc(cx + r * 0.25, cy + r * 0.3, r * 0.5, 0, PI * 2); g.fill(); } }
+    for (let j = 0; j < 14; j++) { const cx = x + rr(-h, h) * 0.32, cy = y - h * rr(0.45, 0.95), r = h * rr(0.14, 0.26); g.fillStyle = shade(c, rr(-0.25, 0.05));
+      g.beginPath(); g.arc(cx, cy, r, 0, PI * 2); g.fill(); if (lit && rand() < 0.6) { g.fillStyle = lit; g.beginPath();
+        g.arc(cx + r * 0.25, cy + r * 0.3, r * 0.5, 0, PI * 2); g.fill(); } }
   }
   function lamp(g, x, y, h, c = 'rgba(255,220,150,0.9)') {
     g.fillStyle = '#0c0c0e'; g.fillRect(x - 1.2, y - h, 2.4, h); g.fillRect(x - 3, y - 4, 6, 4);
@@ -112,7 +116,9 @@ const STAGES = (() => {
     // light pool on the ground
     g.save(); g.globalCompositeOperation = 'lighter'; const gr = g.createRadialGradient(x, y, 0, x, y, 40); gr.addColorStop(0, 'rgba(255,200,130,0.18)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.beginPath(); g.ellipse(x, y, 40, 8, 0, 0, PI * 2); g.fill(); g.restore();
   }
-  function flag(g, x, top, c) { g.fillStyle = '#6a6a72'; g.fillRect(x - 0.8, top, 1.6, FY - top); g.fillStyle = '#c8b060'; g.fillRect(x - 1.5, top - 2, 3, 2); g.fillStyle = c; g.beginPath(); g.moveTo(x + 1, top + 1); g.quadraticCurveTo(x + 9, top - 1, x + 17, top + 3); g.lineTo(x + 17, top + 12); g.quadraticCurveTo(x + 9, top + 8, x + 1, top + 10); g.fill(); g.fillStyle = 'rgba(0,0,0,0.3)'; g.fillRect(x + 9, top + 1, 8, 10); }
+  function flag(g, x, top, c) { g.fillStyle = '#6a6a72'; g.fillRect(x - 0.8, top, 1.6, FY - top); g.fillStyle = '#c8b060'; g.fillRect(x - 1.5, top - 2, 3, 2);
+    g.fillStyle = c; g.beginPath(); g.moveTo(x + 1, top + 1); g.quadraticCurveTo(x + 9, top - 1, x + 17, top + 3); g.lineTo(x + 17, top + 12);
+    g.quadraticCurveTo(x + 9, top + 8, x + 1, top + 10); g.fill(); g.fillStyle = 'rgba(0,0,0,0.3)'; g.fillRect(x + 9, top + 1, 8, 10); }
   function vignette(g, w) { const gr = g.createRadialGradient(w / 2, H * 0.55, H * 0.4, w / 2, H * 0.55, w * 0.62); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,0.55)'); g.fillStyle = gr; g.fillRect(0, 0, w, H); }
   // MK-style perspective floor, lines converge to a vanishing point above the middle of the arena
   function pfloor(g, kind, c1, c2, o = {}) {

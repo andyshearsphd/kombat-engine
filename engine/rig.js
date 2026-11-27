@@ -207,7 +207,9 @@ const RIG = (() => {
       let [a, b] = hs(0.3); g.strokeStyle = 'rgba(255,255,255,0.8)'; g.lineWidth = Math.max(1, r * 0.3); g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke();
       [a, b] = hs(-0.45); g.strokeStyle = 'rgba(20,24,30,0.3)'; g.lineWidth = Math.max(1, r * 0.35); g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke();
       const n = Math.max(2, Math.round(fr.L / 6.5));
-      for (let i = 1; i < n; i++) { const t = i / n, p0 = P(t, -r * 1.3), p1 = P(t, r * 1.3); g.strokeStyle = 'rgba(40,44,54,0.5)'; g.lineWidth = 0.8; g.beginPath(); g.moveTo(p0[0], p0[1]); g.lineTo(p1[0], p1[1]); g.stroke(); g.strokeStyle = 'rgba(255,255,255,0.3)'; g.lineWidth = 0.5; g.beginPath(); g.moveTo(p0[0] + fr.ux, p0[1] + fr.uy); g.lineTo(p1[0] + fr.ux, p1[1] + fr.uy); g.stroke(); }
+      for (let i = 1; i < n; i++) { const t = i / n, p0 = P(t, -r * 1.3), p1 = P(t, r * 1.3); g.strokeStyle = 'rgba(40,44,54,0.5)'; g.lineWidth = 0.8; g.beginPath();
+        g.moveTo(p0[0], p0[1]); g.lineTo(p1[0], p1[1]); g.stroke(); g.strokeStyle = 'rgba(255,255,255,0.3)'; g.lineWidth = 0.5; g.beginPath();
+        g.moveTo(p0[0] + fr.ux, p0[1] + fr.uy); g.lineTo(p1[0] + fr.ux, p1[1] + fr.uy); g.stroke(); }
     } else if (mat === 'glass') {
       const a = P(0.1, (ra + rb) * 0.25), b = P(0.85, (ra + rb) * 0.25);
       g.strokeStyle = 'rgba(255,255,255,0.7)'; g.lineWidth = 1.3; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke();
@@ -263,7 +265,8 @@ const RIG = (() => {
       g.strokeStyle = '#141010'; g.lineWidth = 0.9; for (let i = 0; i < 3; i++) { const tx = l * (0.75 + i * 0.12), ty = h * (0.5 + i * 0.32); g.beginPath(); g.moveTo(tx, ty); g.lineTo(tx + 2.2, ty + 1.6); g.stroke(); }
       g.beginPath(); g.moveTo(-l * 0.35, h * 1.0); g.lineTo(-l * 0.35 - 2, h * 1.0 + 1.4); g.stroke(); g.lineCap = 'butt';
     }
-    else if (def.paws) { g.beginPath(); g.ellipse(l * 0.35, h * 0.55, l * 0.58, h * 0.85, 0.08, 0, PI * 2); g.fill(); g.strokeStyle = 'rgba(0,0,0,0.35)'; g.lineWidth = 0.6; for (let i = 0; i < 3; i++) { g.beginPath(); g.moveTo(l * 0.7 + i * 1.3, h * 0.1); g.lineTo(l * 0.75 + i * 1.3, h * 1.2); g.stroke(); } }
+    else if (def.paws) { g.beginPath(); g.ellipse(l * 0.35, h * 0.55, l * 0.58, h * 0.85, 0.08, 0, PI * 2); g.fill(); g.strokeStyle = 'rgba(0,0,0,0.35)';
+      g.lineWidth = 0.6; for (let i = 0; i < 3; i++) { g.beginPath(); g.moveTo(l * 0.7 + i * 1.3, h * 0.1); g.lineTo(l * 0.75 + i * 1.3, h * 1.2); g.stroke(); } }
     else {
       g.beginPath(); g.moveTo(-h * 0.9, -h * 0.6); g.quadraticCurveTo(l * 0.2, -h * 1.0, l * 0.55, -h * 0.2); g.quadraticCurveTo(l * 0.95, h * 0.2, l * 0.95, h * 0.9); g.lineTo(-h * 0.9, h * 1.0); g.closePath(); g.fill();
       g.fillStyle = shade(c, -0.6); g.fillRect(-h * 0.9, h * 0.75, l * 0.95 + h * 0.9, h * 0.35);
@@ -339,7 +342,9 @@ const RIG = (() => {
     g.restore();
     if (mat === 'fur') {
       srand(91); g.fillStyle = shade(def.col.torso, -0.25);
-      for (let i = 0; i < 26; i++) { const t = i / 26, side = i % 2 ? 1 : -1, p = fr.at(t, side * (side > 0 ? d.belly : d.back) * (0.85 + 0.15 * Math.sin(t * PI))); g.beginPath(); g.moveTo(p[0], p[1] - 1.5); g.lineTo(p[0] + fr.n[0] * side * (1.5 + rr() * 1.5), p[1] + fr.n[1] * side * (1.5 + rr() * 1.5) + 1); g.lineTo(p[0], p[1] + 1.5); g.fill(); }
+      for (let i = 0; i < 26; i++) { const t = i / 26, side = i % 2 ? 1 : -1, p = fr.at(t, side * (side > 0 ? d.belly : d.back) * (0.85 + 0.15 * Math.sin(t * PI)));
+        g.beginPath(); g.moveTo(p[0], p[1] - 1.5); g.lineTo(p[0] + fr.n[0] * side * (1.5 + rr() * 1.5), p[1] + fr.n[1] * side * (1.5 + rr() * 1.5) + 1);
+        g.lineTo(p[0], p[1] + 1.5); g.fill(); }
     }
   }
   function drawWounds(g, d, J, wounds) {
@@ -386,7 +391,7 @@ const RIG = (() => {
     g.restore();
     return J;
   }
-  // ---------- 1.1: an armored wheelchair for seated fighters (def.chair: true or { metal, tire, plate, spikes }) ----------
+  // ---------- an armored wheelchair for seated fighters (def.chair: true or { metal, tire, plate, spikes }) ----------
   function wheel(g, cx, cy, r, ang, o, far) {
     const k = far ? -0.25 : 0;
     ball(g, cx, cy, r, shade(o.tire, k));
@@ -448,7 +453,9 @@ const RIG = (() => {
       // the chair head on: big wheels edge on at the sides, seat, backrest, footplate
       const o = Object.assign({ metal: '#7a7e88', tire: '#1c1c1e', plate: '#4e535c' }, def.chair === true ? {} : def.chair), r = d.shin * 0.55, wx = Math.max(shx, d.hipW * 1.2) + 4 * k;
       poly(g, [[-wx + 2 * k, hipY - d.torso * 0.75], [wx - 2 * k, hipY - d.torso * 0.75], [wx - 3 * k, hipY + 2 * k], [-wx + 3 * k, hipY + 2 * k]], shade(o.plate, -0.35));
-      for (const sd of [-1, 1]) { g.fillStyle = o.tire; g.beginPath(); g.ellipse(sd * wx, -r, r * 0.22, r, 0, 0, PI * 2); g.fill(); g.strokeStyle = o.metal; g.lineWidth = 1.2 * k; g.beginPath(); g.ellipse(sd * wx, -r, r * 0.14, r * 0.8, 0, 0, PI * 2); g.stroke(); line(g, sd * wx, -r * 2.05, sd * wx, -r * 1.2, shade(o.plate, 0.3), 3 * k); }
+      for (const sd of [-1, 1]) { g.fillStyle = o.tire; g.beginPath(); g.ellipse(sd * wx, -r, r * 0.22, r, 0, 0, PI * 2); g.fill(); g.strokeStyle = o.metal;
+        g.lineWidth = 1.2 * k; g.beginPath(); g.ellipse(sd * wx, -r, r * 0.14, r * 0.8, 0, 0, PI * 2); g.stroke();
+        line(g, sd * wx, -r * 2.05, sd * wx, -r * 1.2, shade(o.plate, 0.3), 3 * k); }
       poly(g, [[-wx, hipY + 3 * k], [wx, hipY + 3 * k], [wx, hipY + 7 * k], [-wx, hipY + 7 * k]], o.plate);
       poly(g, [[-hx * 2, -3 * k], [hx * 2, -3 * k], [hx * 2, 0], [-hx * 2, 0]], shade(o.plate, 0.1));
     }
@@ -476,7 +483,9 @@ const RIG = (() => {
       g.closePath();
       const tg = g.createLinearGradient(-shx, 0, shx, 0); tg.addColorStop(0, shade(c.torso, -0.4)); tg.addColorStop(0.55, c.torso); tg.addColorStop(0.85, shade(c.torso, 0.12)); tg.addColorStop(1, shade(c.torso, -0.15));
       g.save(); if ((ms.torso) === 'glass') g.globalAlpha = 0.82; g.fillStyle = tg; g.fill(); g.globalAlpha = 1; g.clip();
-      if (ms.torso === 'fur' || ms.torso === 'feather') { srand(33); for (let i = 0; i < 60; i++) { const x = (rr() - 0.5) * shx * 2, y = sY + rr() * (hipY - sY); g.strokeStyle = rr() < 0.5 ? 'rgba(0,0,0,0.25)' : 'rgba(255,240,220,0.15)'; g.lineWidth = 0.7; g.beginPath(); g.moveTo(x, y); g.lineTo(x + (rr() - 0.5) * 2, y + 3); g.stroke(); } }
+      if (ms.torso === 'fur' || ms.torso === 'feather') { srand(33); for (let i = 0; i < 60; i++) { const x = (rr() - 0.5) * shx * 2, y = sY + rr() * (hipY - sY);
+          g.strokeStyle = rr() < 0.5 ? 'rgba(0,0,0,0.25)' : 'rgba(255,240,220,0.15)'; g.lineWidth = 0.7; g.beginPath(); g.moveTo(x, y); g.lineTo(x + (rr() - 0.5) * 2, y + 3);
+          g.stroke(); } }
       if (Fd.detail) Fd.detail(g, d, G, st);
       const ao = g.createLinearGradient(0, hipY - 6, 0, hipY + 3); ao.addColorStop(0, 'rgba(0,0,0,0)'); ao.addColorStop(1, 'rgba(0,0,0,0.3)'); g.fillStyle = ao; g.fillRect(-shx * 2, hipY - 6, shx * 4, 9);
       g.restore();
@@ -518,7 +527,7 @@ const RIG = (() => {
   const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
   const DW = 380, DH = 340, DAX = 190, DAY = 268;
   let dcv = null, dg = null, DNOISE = null;
-  // opt.cache: an object (a fighter) whose finished sprite is kept and reused for opt.every frames (1.1.1),
+  // opt.cache: an object (a fighter) whose finished sprite is kept and reused for opt.every frames,
   // so each fighter is digitized every other frame; the game bumps digi.frame once per rendered frame
   const DCACHE = new WeakMap();
   function digi(g, x, y, fn, opt = {}) {
@@ -580,7 +589,10 @@ const RIG = (() => {
   function jointWorld(f, p, name) {
     const J = solve(f.d, p);
     let pt = name === 'head' ? add(J.nk, dir(PI - J.p.lean, 9 * f.d.k)) : name === 'handF' ? J.AF.wr : name === 'handB' ? J.AB.wr :
-      name === 'neck' ? J.nk : name === 'hip' ? J.hip : name === 'chest' ? lerp2(J.hip, J.sh, 0.7) : name === 'belly' ? lerp2(J.hip, J.sh, 0.35) : name === 'kneeF' ? J.LF.knee : name === 'elbowF' ? J.AF.el : name === 'elbowB' ? J.AB.el : name === 'kneeB' ? J.LB.knee : name === 'handFx' ? add(J.AF.wr, dir(J.AF.a2, f.d.fist * 1.2)) : name === 'handBx' ? add(J.AB.wr, dir(J.AB.a2, f.d.fist * 1.2)) : name === 'toeF' ? add(J.LF.ank, dir(J.LF.sa + PI / 2, f.d.footL * 0.5)) : name === 'footF' ? J.LF.ank : name === 'footB' ? J.LB.ank : J.hip;
+      name === 'neck' ? J.nk : name === 'hip' ? J.hip : name === 'chest' ? lerp2(J.hip, J.sh, 0.7) : name === 'belly' ? lerp2(J.hip, J.sh, 0.35) :
+      name === 'kneeF' ? J.LF.knee : name === 'elbowF' ? J.AF.el : name === 'elbowB' ? J.AB.el : name === 'kneeB' ? J.LB.knee :
+      name === 'handFx' ? add(J.AF.wr, dir(J.AF.a2, f.d.fist * 1.2)) : name === 'handBx' ? add(J.AB.wr, dir(J.AB.a2, f.d.fist * 1.2)) :
+      name === 'toeF' ? add(J.LF.ank, dir(J.LF.sa + PI / 2, f.d.footL * 0.5)) : name === 'footF' ? J.LF.ank : name === 'footB' ? J.LB.ank : J.hip;
     if (J.p.rot) {
       const pv = J.p.piv === 1 ? [0, 0] : J.p.piv === 2 ? lerp2(J.hip, J.sh, 0.4) : J.hip, c = Math.cos(J.p.rot), s = Math.sin(J.p.rot);
       const dx = pt[0] - pv[0], dy = pt[1] - pv[1];
@@ -661,5 +673,14 @@ const RIG = (() => {
     }
   }
 
-  return { P, track, lerp, resolve, solve, draw, drawFront, drawHeadAt, jointWorld, digi, seg, segPath, litFill, srand, rr, shade, ball, oval, poly, line, cap, capPath, sphFill, bone, skull, BONE, PI, dir, add, lerp2 };
+  // small math shared by the other engine files (RIG loads first)
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const M = {
+    clamp,
+    rnd: (a, b) => a + Math.random() * (b - a),
+    pick: a => a[(Math.random() * a.length) | 0],
+    lerp: (a, b, t) => a + (b - a) * clamp(t, 0, 1),
+    ease: t => { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); },
+  };
+  return { M, P, track, lerp, resolve, solve, draw, drawFront, drawHeadAt, jointWorld, digi, seg, segPath, litFill, srand, rr, shade, ball, oval, poly, line, cap, capPath, sphFill, bone, skull, BONE, PI, dir, add, lerp2 };
 })();

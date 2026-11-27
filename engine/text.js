@@ -28,7 +28,8 @@ const TXT = (() => {
     ctx.textBaseline = 'top';
     ctx.lineJoin = 'round';
     const w = ctx.measureText(str).width;
-    if (window.MK_BOXES) { const mt = ctx.measureText(str), sh = opt.shadow !== false ? size * 0.08 + 1 : 0, m = ctx.getTransform(), ax = opt.align === 'center' ? x - w / 2 : opt.align === 'right' ? x - w : x; window.MK_BOXES.push({ k: 'txt', s: str, x0: m.a * ax + m.e, y0: m.d * (y - mt.actualBoundingBoxAscent) + m.f, x1: m.a * (ax + w + sh) + m.e, y1: m.d * (y + mt.actualBoundingBoxDescent + sh) + m.f }); }
+    if (window.MK_BOXES) { const mt = ctx.measureText(str), sh = opt.shadow !== false ? size * 0.08 + 1 : 0, m = ctx.getTransform(), ax = opt.align === 'center' ? x - w / 2 : opt.align === 'right' ? x - w : x;
+      window.MK_BOXES.push({ k: 'txt', s: str, x0: m.a * ax + m.e, y0: m.d * (y - mt.actualBoundingBoxAscent) + m.f, x1: m.a * (ax + w + sh) + m.e, y1: m.d * (y + mt.actualBoundingBoxDescent + sh) + m.f }); }
     let dx = x;
     if (opt.align === 'center') dx = x - w / 2; else if (opt.align === 'right') dx = x - w;
     ctx.translate(Math.round(dx), Math.round(y));

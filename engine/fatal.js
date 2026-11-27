@@ -3,10 +3,7 @@
 'use strict';
 const FATAL = (() => {
   const R = RIG, P = RIG.P, PI = Math.PI;
-  const rnd = (a, b) => a + Math.random() * (b - a);
-  const lerp = (a, b, t) => a + (b - a) * Math.max(0, Math.min(1, t));
-  const pick = a => a[(Math.random() * a.length) | 0];
-  const ease = t => { t = Math.max(0, Math.min(1, t)); return t * t * (3 - 2 * t); };
+  const { rnd, lerp, pick, ease } = RIG.M;
 
   function walkTo(f, x, dt, api, sp = 95) {
     const dx = x - f.x;

@@ -103,13 +103,16 @@ const KIT = (() => {
   }
 
   // ---------- front views for the victory pose: faces and outfits seen head on ----------
-  function faceShape(g, w, top, chin) { g.beginPath(); g.moveTo(0, top); g.bezierCurveTo(w * 0.95, top, w * 1.05, -14, w * 0.95, -9); g.quadraticCurveTo(w * 0.85, chin - 3, 0, chin); g.quadraticCurveTo(-w * 0.85, chin - 3, -w * 0.95, -9); g.bezierCurveTo(-w * 1.05, -14, -w * 0.95, top, 0, top); g.closePath(); }
+  function faceShape(g, w, top, chin) { g.beginPath(); g.moveTo(0, top); g.bezierCurveTo(w * 0.95, top, w * 1.05, -14, w * 0.95, -9);
+    g.quadraticCurveTo(w * 0.85, chin - 3, 0, chin); g.quadraticCurveTo(-w * 0.85, chin - 3, -w * 0.95, -9); g.bezierCurveTo(-w * 1.05, -14, -w * 0.95, top, 0, top);
+    g.closePath(); }
   function eyesF(g, st, x, y, r, o = {}) {
     for (const sd of [-1, 1]) {
       const ex = sd * x;
       if (st.dead) { R.line(g, ex - r, y - r * 0.7, ex + r, y + r * 0.7, '#2a0a0a', 0.7); R.line(g, ex - r, y + r * 0.7, ex + r, y - r * 0.7, '#2a0a0a', 0.7); continue; }
       if (o.animal) { g.fillStyle = o.iris || '#120a06'; g.beginPath(); g.ellipse(ex, y, r * 0.9, r * 0.95, 0, 0, PI * 2); g.fill(); if (o.slit) { g.fillStyle = '#050302'; g.fillRect(ex - r * 0.15, y - r * 0.8, r * 0.3, r * 1.6); } }
-      else { g.fillStyle = o.white || '#ece2d2'; g.beginPath(); g.ellipse(ex, y, r * 1.25, r * 0.7, 0, 0, PI * 2); g.fill(); g.fillStyle = o.iris || '#2a1a10'; g.beginPath(); g.arc(ex, y, r * 0.55, 0, PI * 2); g.fill(); g.fillStyle = 'rgba(0,0,0,0.4)'; g.fillRect(ex - r * 1.25, y - r * 0.7, r * 2.5, r * 0.3); }
+      else { g.fillStyle = o.white || '#ece2d2'; g.beginPath(); g.ellipse(ex, y, r * 1.25, r * 0.7, 0, 0, PI * 2); g.fill(); g.fillStyle = o.iris || '#2a1a10';
+        g.beginPath(); g.arc(ex, y, r * 0.55, 0, PI * 2); g.fill(); g.fillStyle = 'rgba(0,0,0,0.4)'; g.fillRect(ex - r * 1.25, y - r * 0.7, r * 2.5, r * 0.3); }
       if (o.glow) { g.fillStyle = 'rgba(255,40,20,0.3)'; g.beginPath(); g.arc(ex, y, r * 2, 0, PI * 2); g.fill(); }
       g.fillStyle = 'rgba(255,255,255,0.85)'; g.fillRect(ex + r * 0.15, y - r * 0.4, Math.max(0.6, r * 0.3), Math.max(0.6, r * 0.3));
     }
@@ -142,7 +145,9 @@ const KIT = (() => {
   function frontTail(g, d, G, st, cols, n, len, r0, bushy) {
     const k = d.k, w = Math.sin((st.t || 0) * 3) * 0.15;
     let p = [G.hx * 0.6, G.hipY - 3 * k];
-    for (let i = 0; i < n; i++) { const a = 1.2 - i * (1.9 / n) + w * i * 0.3, q = [p[0] + Math.cos(-a + 0.4) * len * k, p[1] - Math.sin(a) * len * k * 0.9]; const t0 = i / n, t1 = (i + 1) / n, ra = (bushy ? r0 * (0.7 + Math.sin(t0 * PI) * 0.6) : r0 * (1 - t0 * 0.6)) * k, rb = (bushy ? r0 * (0.7 + Math.sin(t1 * PI) * 0.6) : r0 * (1 - t1 * 0.6)) * k; R.seg(g, p, q, ra, rb, cols[i % cols.length], 'fur', { seed: 900 + i }); p = q; }
+    for (let i = 0; i < n; i++) { const a = 1.2 - i * (1.9 / n) + w * i * 0.3, q = [p[0] + Math.cos(-a + 0.4) * len * k, p[1] - Math.sin(a) * len * k * 0.9];
+      const t0 = i / n, t1 = (i + 1) / n, ra = (bushy ? r0 * (0.7 + Math.sin(t0 * PI) * 0.6) : r0 * (1 - t0 * 0.6)) * k, rb = (bushy ? r0 * (0.7 + Math.sin(t1 * PI) * 0.6) : r0 * (1 - t1 * 0.6)) * k;
+      R.seg(g, p, q, ra, rb, cols[i % cols.length], 'fur', { seed: 900 + i }); p = q; }
   }
 
   // fighters: playable, in select-screen order; bosses: ladder order (the last is the final boss)
@@ -151,13 +156,13 @@ const KIT = (() => {
   const SLOTS = [{ motion: ['B', 'F'], btn: 'P', label: 'BACK, FORWARD + PUNCH' }, { motion: ['D', 'F'], btn: 'K', label: 'DOWN, FORWARD + KICK' }, { motion: ['D', 'B'], btn: 'P', label: 'DOWN, BACK + PUNCH' }];
   // fatality slots: 1 = DOWN, DOWN + PUNCH, 2 = FORWARD, FORWARD + KICK, 3 = BACK, BACK + PUNCH
   const FSLOTS = [{ motion: ['D', 'D'], btn: 'P', label: 'DOWN, DOWN + PUNCH' }, { motion: ['F', 'F'], btn: 'K', win: 0.6, label: 'FORWARD, FORWARD + KICK' }, { motion: ['B', 'B'], btn: 'P', label: 'BACK, BACK + PUNCH' }];
-  // a fighter's specials: sp1/sp2/sp3 ({ kind, name, ... }); the 1.0 fields proj and sp2 still work
+  // a fighter's specials: sp1/sp2/sp3 ({ kind, name, ... }); the older fields proj and sp2 still work
   function specials(f) {
     const s1 = f.sp1 || (f.proj ? { kind: 'proj', name: f.proj.name, proj: f.proj } : null);
     const s2 = f.sp2 ? Object.assign({}, f.sp2, f.sp2Mod ? { mod: Object.assign({}, f.sp2.mod, f.sp2Mod) } : null) : null;
     return [s1, s2, f.sp3 || null].map((s, i) => s && Object.assign({ slot: i + 1 }, SLOTS[i], s)).filter(Boolean);
   }
-  // a fighter's fatalities: fatals: [{ id, name }] or the 1.0 fields fatal and alt
+  // a fighter's fatalities: fatals: [{ id, name }] or the older fields fatal and alt
   function fatalities(f) {
     const list = f.fatals || [f.fatal, f.alt].filter(Boolean);
     return list.slice(0, 3).map((x, i) => Object.assign({ slot: i + 1 }, FSLOTS[i], x));

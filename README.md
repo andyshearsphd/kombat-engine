@@ -6,37 +6,20 @@ The engine handles everything that isn't specific to one game: the skeletal figh
 
 A game supplies the content: its fighters, arenas, fatalities, victory poses, titles and icons.
 
-## What's new in 1.9.0
+## Latest
 
-Corner traps are gone, on by default: a combo damage cap, at most three launches per trip through the air, the attacker pushed back when hitting someone pinned at the edge, and a CPU that fights its way out of corners. Each is a `GAME` setting a game can tune or switch off. 1.8.8: Optional `GAME.selectStart` picks the fighter the fighter screen opens on, (1.8.7) optional `GAME.endingScene` lets a game paint its own ending screen, (1.8.6) optional `GAME.titleSize` sets the title's size over a title scene, (1.8.5) optional `GAME.titleStack` stacks the title's words, and (1.8.4) an optional `GAME.kicker` line sits above the title. 1.8.3: bigger FIGHT and NEXT buttons on the fighter and opponent screens, with MOVES and RANDOM moved left. 1.8.2: the fighter and opponent screens always show a fighter's whole bio, and `SFX.howl` sounds like a wolf. 1.8.1: the announcer waits for a line to finish instead of cutting it off, and in single match it calls the opponent's name too.
+**1.9.1** is a clean-up with no change to how anything plays, except that the win, fatality and flawless banners and calls now wait while the game is paused. Dead code and leftovers are gone, repeated code became small shared helpers, and every `GAME` setting is listed with its default at the top of `engine/game.js`.
 
-1.8.0: one layout for both the fighter and opponent screens, and it is the only one: the portrait grid fills the left side, filled from the middle with rows as even as possible and at most six to a row (16 fighters make rows of 6, 5 and 5; 24 make four rows of 6). The spotlight is on the right with the fighter facing left, BACK is bottom left and the two action buttons are bottom right. In single match the fighter screen says NEXT, since the opponent screen comes next. `GAME.selectCols` and `GAME.selectLayout` are gone. A new optional `GAME.titleScene(g, W, H, t)` paints a picture behind the title screen.
+**1.9.0** got rid of corner traps, on by default: a combo damage cap, at most three launches per trip through the air, the attacker pushed back when hitting someone pinned at the edge, and a CPU that fights its way out of corners.
 
-1.5.0 added a silence status for command grabs (`silence: n` in a `cgrab` mod): no specials for n seconds. 1.4.0 added combo damage scaling and a cap per combo (`GAME.comboDamage`) and a ladder that draws a set number of opponents at random (`GAME.ladder.opponents`). See Settings below.
-
-1.3.0 added three Matrix moves that every fighter gets automatically (the CPU uses them too): the Burly Brawl Flurry, the Phase Dash and the Kip-Up Spin Kick. See Controls below. Full history in `CHANGELOG.md`.
-
-## What was new in 1.1.0
-
-Everything is optional, so a game written for 1.0.0 keeps working unchanged. Full details are in `CHANGELOG.md`.
-
-- Up to three specials and three fatalities per fighter. The CPU picks among a fighter's fatalities.
-- New special moves: weapon swings, rising uppercuts, parries (block a hit or knock a projectile back), and command grabs that drain, shake, stun or pull from long range.
-- Games can define their own projectiles: arcs, bounces, spreads, bursts, strikes from the sky, boomerangs, fire trails and ghost doubles. New hit effect: slow.
-- Throw styles per fighter: suplex, hip toss, shoulder throw or spin throw.
-- Seated fighters in an armored wheelchair, with seated poses, a chair ram and a roll-over stomp.
-- Ladder options: a mirror match and endurance rounds.
-- Announcer calls and voice can be changed per game, with an optional old-radio crackle. Games can add their own tunes over the industrial soundtrack.
-- Each game can keep its own mute setting.
-- Arenas can react to crowd hype.
-- The moves screen lists each fighter's own specials, fatalities and throw, and the current game's pit arenas. The select screen holds more than 16 fighters.
+Everything earlier, release by release, is in `CHANGELOG.md`.
 
 ## Games on this engine
 
 | Game | Repo | Engine version |
 | --- | --- | --- |
-| Muncie Kombat | [andyshearsphd/Muncie-Kombat](https://github.com/andyshearsphd/Muncie-Kombat) ([play](https://andyshearsphd.github.io/Muncie-Kombat/)) | 1.9.0 |
-| POTUS Kombat | [andyshearsphd/POTUS-Kombat](https://github.com/andyshearsphd/POTUS-Kombat) | 1.9.0 |
+| Muncie Kombat | [andyshearsphd/Muncie-Kombat](https://github.com/andyshearsphd/Muncie-Kombat) ([play](https://andyshearsphd.github.io/Muncie-Kombat/)) | 1.9.1 |
+| POTUS Kombat | [andyshearsphd/POTUS-Kombat](https://github.com/andyshearsphd/POTUS-Kombat) | 1.9.1 |
 
 ## Controls
 
@@ -151,7 +134,7 @@ Optional fields the engine reads from a fighter:
 | `stats: { speed, power, weight, armor, frail }` | Walk and jump speed, damage dealt, how far hits knock them, and damage taken (`armor` and `frail` multiply it). Any `armor` value also lets them shrug off stun hits without flinching |
 | `tune: n` | With `GAME.tunes`, which tune plays when this fighter is the opponent (by index) |
 
-Specials and fatalities (1.1):
+Specials and fatalities:
 
 | Field | Effect |
 | --- | --- |
@@ -169,7 +152,7 @@ Projectile kinds (`proj.kind`): `poop`, `knife`, `hairball`, `card`, `bball`, `g
 
 Second special kinds (`sp2.kind`): `rush`, `roll`, `slide`, `leap`, `cloud`, `blow`, `flurry`, `sneak`, `burrow`, `playdead`, plus the 1.1 kinds above.
 
-A game can define its own projectile kinds in `GAME.projectiles` (1.1):
+A game can define its own projectile kinds in `GAME.projectiles`:
 
 ```js
 projectiles: {
@@ -211,34 +194,40 @@ FATAL.add(K => {
 
 ### Settings: `js/config.js`
 
+Every setting is optional. The full list with defaults is at the top of `engine/game.js`.
+
 ```js
 window.GAME = {
+  // titles and screens
   title: 'MUNCIE KOMBAT',
-  subtitle: 'A PURPLE HIPPO ARCADE GAME',
-  kicker: "PURPLE HIPPO ARCADE'S",      // optional small line stacked above the title (1.8.4)
-  titleStack: true,                    // optional: one title word per line, with titleScene (1.8.5)
-  titleSize: 60,                       // optional: title type size with titleScene, default 40 (1.8.6)
-  endingScene(g, W, H, t, def, kit) { }, // optional: paint the whole ending screen (1.8.7)
-  selectStart: 'hippo',                // optional: fighter the fighter screen opens on (1.8.8)
-  juggleCap: 3, wallPush: true, cpuWallEscape: true,  // anti-trap, on by default (1.9.0); comboDamage defaults to { from: 3, scale: 0.85, cap: 30, healCap: 6 }
-  ladderGoal: 'CITY HALL',             // "19 FIGHTS TO CITY HALL"
-  endingLine: '...',                   // under the champion on the ending screen
-  mascot: 'hippo',                     // fighter whose head is on the title emblem
-  toasty: { fighter: 'hippo', text: 'SQUARE SLICED!' },  // optional pop-in after uppercuts
+  subtitle: 'A PURPLE HIPPO ARCADE GAME',  // line under the title
+  kicker: "PURPLE HIPPO ARCADE'S",         // small line stacked above the title
+  titleScene(g, W, H, t) { },              // paints a picture behind the title; the title moves to the top and the emblem is skipped
+  titleStack: true,                        // with titleScene: one title word per line
+  titleSize: 60,                           // with titleScene: title type size (default 40)
+  mascot: 'hippo',                         // fighter whose head is on the title emblem
+  selectStart: 'hippo',                    // fighter the fighter screen highlights each time it opens from the title
+  ladderGoal: 'CITY HALL',                 // "19 FIGHTS TO CITY HALL"
+  endingLine: '...',                       // under the champion on the ending screen
+  endingScene(g, W, H, t, def, kit) { },   // paints the whole ending screen; kit is { R, P, PS, TXT, FLOOR }
+  toasty: { fighter: 'hippo', text: 'SQUARE SLICED!' },  // a head that pops in after some uppercuts
   winPoses(K) { return { hippo: { fp(t) { }, fx(f, t) { }, draw(g, f, t) { } } }; },
-  // 1.1, all optional:
-  ladder: { mirror: true, endurance: 2 },  // a mirror match and two endurance rounds before the bosses
+
+  // fighting
+  projectiles: { },                        // game-defined projectile kinds, see Fighters
+  ladder: { mirror: true, endurance: 2, opponents: 15 },  // a mirror match, two endurance rounds, 15 random opponents instead of the whole roster
+  comboDamage: { from: 3, scale: 0.85, cap: 30, healCap: 6 },  // the default: hits after the 3rd shrink, one combo takes at most 30
+  juggleCap: 3,                            // the default; 0 switches it off
+  wallPush: true,                          // the default
+  cpuWallEscape: true,                     // the default
+
+  // sound
   calls: { fight: 'FIGHT!', round: 'ROUND', finish: 'FINISH %s!', fatality: 'FATALITY', flawless: 'FLAWLESS VICTORY', wins: 'WINS', next: 'NEXT FIGHTER', mirror: 'MIRROR MATCH', endurance: 'ENDURANCE' },
   voice: { pitch: 0.2, rate: 0.82, prefer: /Daniel|Fred/i, radio: false },  // radio adds old-broadcast crackle
-  muteKey: 'mk_muted',                 // where the mute setting is saved
+  voiceClips: 'voice/',                    // recorded announcer clips: manifest.json plus one .mp3 per phrase
+  muteKey: 'mk_muted',                     // where the mute setting is saved
   tunes: [{ name, bpm: 132, notes: 'C5/2 C5/2 D5/2 E5/2 ...', chords: 'C G C F', chordSteps: 16 }],  // fight music; an opponent's tune: n picks one, otherwise it rotates
   menuTune: { name, bpm: 92, notes, chords },
-  projectiles: { },                    // see Fighters
-  // 1.4, all optional (leave them out to keep the earlier behavior):
-  comboDamage: { from: 3, scale: 0.85, cap: 25, healCap: 6 },  // hits after the 3rd do 15% less each, one combo takes at most 25% of the bar, a combo heals at most 6
-  // 1.8, optional:
-  titleScene(g, W, H, t) { },          // paints the title screen background; the title moves to the top and the emblem is skipped
-  // ladder: { mirror: true, endurance: 2, opponents: 15 },  // fight 15 opponents picked at random instead of the whole roster
 };
 ```
 
@@ -256,7 +245,7 @@ Standing policy: when one game needs the engine to behave differently (a bigger 
 
 ### Known items for the next release
 
-None right now. Fixed in 1.1.0: the moves screen lists the current game's pit arenas, the select screen grows past 16 fighters, and each game can keep its own mute setting with `GAME.muteKey` (games that don't set it still share `mk_muted`).
+None right now.
 
 ## Testing
 
