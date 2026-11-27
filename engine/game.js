@@ -1665,7 +1665,7 @@
   function renderOpp() {
     elControls.classList.remove('on'); elPause.classList.remove('on');
     bgDark(); ui = [];
-    const list = OPPS(), next = () => { screen = 'arena'; SFX.gong(); };
+    const list = OPPS(), next = () => { screen = 'arena'; SFX.gong(); say(list[sel.o].name.replace("'", 'g').toLowerCase()); };  // 1.8.1: the opponent is announced too
     pickScreen('CHOOSE YOUR OPPONENT', list, sel.o, i => { if (sel.o === i) next(); else { sel.o = i; SFX.select(); } },
       ['RANDOM', () => { sel.o = (Math.random() * list.length) | 0; SFX.select(); }], ['NEXT', next], () => { screen = 'select'; SFX.blip(); });
     grit();

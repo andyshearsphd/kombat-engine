@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.8.1 (2026-11-27)
+
+- The announcer no longer cuts itself off. A line asked for while another is still playing waits for it to finish; one that has waited more than 2.5 seconds is dropped as stale. Lines from `SFX.sayAll` and lines with a callback are never dropped.
+- In single match the announcer says the opponent's name when you confirm them, the same as your own pick.
+
 ## 1.8.0 (2026-11-27)
 
 - The fighter screen and the opponent screen share one layout, and it is the only one. The portrait grid fills the left side: as many rows as needed at up to six portraits each, the counts as even as possible (16 fighters: 6, 5, 5; 24: four rows of 6), each row centered. The spotlight on the right shows the fighter facing left. BACK is bottom left; bottom right is MOVES plus FIGHT on the fighter screen (NEXT in single match, since choosing the opponent comes next) and RANDOM plus NEXT on the opponent screen. Bosses keep their BOSS tag.

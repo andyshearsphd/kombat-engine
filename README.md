@@ -6,9 +6,11 @@ The engine handles everything that isn't specific to one game: the skeletal figh
 
 A game supplies the content: its fighters, arenas, fatalities, victory poses, titles and icons.
 
-## What's new in 1.8.0
+## What's new in 1.8.1
 
-One layout for both the fighter and opponent screens, and it is the only one: the portrait grid fills the left side, filled from the middle with rows as even as possible and at most six to a row (16 fighters make rows of 6, 5 and 5; 24 make four rows of 6). The spotlight is on the right with the fighter facing left, BACK is bottom left and the two action buttons are bottom right. In single match the fighter screen says NEXT, since the opponent screen comes next. `GAME.selectCols` and `GAME.selectLayout` are gone. A new optional `GAME.titleScene(g, W, H, t)` paints a picture behind the title screen.
+The announcer waits for a line to finish instead of cutting it off, and in single match it calls the opponent's name too.
+
+1.8.0: one layout for both the fighter and opponent screens, and it is the only one: the portrait grid fills the left side, filled from the middle with rows as even as possible and at most six to a row (16 fighters make rows of 6, 5 and 5; 24 make four rows of 6). The spotlight is on the right with the fighter facing left, BACK is bottom left and the two action buttons are bottom right. In single match the fighter screen says NEXT, since the opponent screen comes next. `GAME.selectCols` and `GAME.selectLayout` are gone. A new optional `GAME.titleScene(g, W, H, t)` paints a picture behind the title screen.
 
 1.5.0 added a silence status for command grabs (`silence: n` in a `cgrab` mod): no specials for n seconds. 1.4.0 added combo damage scaling and a cap per combo (`GAME.comboDamage`) and a ladder that draws a set number of opponents at random (`GAME.ladder.opponents`). See Settings below.
 
@@ -33,7 +35,7 @@ Everything is optional, so a game written for 1.0.0 keeps working unchanged. Ful
 
 | Game | Repo | Engine version |
 | --- | --- | --- |
-| Muncie Kombat | [andyshearsphd/Muncie-Kombat](https://github.com/andyshearsphd/Muncie-Kombat) ([play](https://andyshearsphd.github.io/Muncie-Kombat/)) | 1.8.0 |
+| Muncie Kombat | [andyshearsphd/Muncie-Kombat](https://github.com/andyshearsphd/Muncie-Kombat) ([play](https://andyshearsphd.github.io/Muncie-Kombat/)) | 1.8.1 |
 | POTUS Kombat | [andyshearsphd/POTUS-Kombat](https://github.com/andyshearsphd/POTUS-Kombat) | 1.8.0 |
 
 ## Controls

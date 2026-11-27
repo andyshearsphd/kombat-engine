@@ -65,7 +65,25 @@ const SFX = (() => {
     if (VO.radio) crackle(b.duration);
   }
   // done (1.3.2): called once the line has finished, so lines can be chained with sayAll
+  // 1.8.1: lines wait their turn. A line asked for while another is still playing is queued instead of cutting it off;
+  // a queued line that has waited more than 2.5 seconds is dropped as stale (unless something is waiting on it).
+  const VQ = []; let vbusy = false;
+  function vfree() {
+    vbusy = false;
+    while (VQ.length) {
+      const it = VQ.shift();
+      if (it.done || performance.now() - it.t < 2500) { say(it.text, it.pitch, it.rate, it.done); return; }
+    }
+  }
   function say(text, pitch = VO.pitch, rate = VO.rate, done) {
+    if (vbusy) { VQ.push({ text, pitch, rate, done, t: performance.now() }); return; }
+    vbusy = true;
+    let freed = false;
+    const free = () => { if (freed) return; freed = true; clearTimeout(guard); vfree(); if (done) done(); };
+    const guard = setTimeout(free, 5000);
+    sayNow(text, pitch, rate, free);
+  }
+  function sayNow(text, pitch, rate, done) {
     let called = false;
     const fin = ms => { if (done) setTimeout(() => { if (!called) { called = true; done(); } }, ms); };
     if (CLIPS) { const key = slug(text); if (CB[key]) { playClip(key); fin(CB[key].duration * 1000 + 80); return; } if (!CLIPS.list || CLIPS.list.has(key)) { fin(0); return; } }
