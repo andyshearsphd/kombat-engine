@@ -1582,9 +1582,12 @@
     if (G.titleScene) {
       G.titleScene(ctx, W, H, t);
       // 1.8.4: GAME.kicker, optional: a small line stacked above the title ("PURPLE HIPPO ARCADE'S")
-      const ky = G.kicker ? 16 : 0;
+      // 1.8.5: GAME.titleStack, optional: the title's words stacked one per line ("MUNCIE" over "KOMBAT")
+      let ky = G.kicker ? 16 : 0;
       if (G.kicker) TXT.draw(ctx, G.kicker, W / 2, 3, { size: 13, align: 'center', fill: 'gold' });
-      TXT.draw(ctx, G.title, W / 2, 4 + ky, { size: 40, align: 'center', fill: 'fire' });
+      const lines = G.titleStack ? G.title.split(' ') : [G.title];
+      lines.forEach((ln, i) => TXT.draw(ctx, ln, W / 2, 4 + ky + i * 36, { size: 40, align: 'center', fill: 'fire' }));
+      ky += (lines.length - 1) * 36;
       if (G.subtitle) TXT.draw(ctx, G.subtitle, W / 2, 48 + ky, { size: 10, align: 'center', fill: 'gold' });
     } else {
       emblem(ctx, W / 2, 84, 42, t);

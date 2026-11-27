@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.8.5 (2026-11-27)
+
+- `GAME.titleStack`, optional: on a title screen with `GAME.titleScene`, the title's words are stacked one per line ("MUNCIE" over "KOMBAT"). Without it the title screen is unchanged.
+
 ## 1.8.4 (2026-11-27)
 
 - `GAME.kicker`, optional: a small line stacked above the title on the title screen (Muncie Kombat: "PURPLE HIPPO ARCADE'S"). Without it the title screen is unchanged.
