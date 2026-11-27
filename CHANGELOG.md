@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.8.2 (2026-11-27)
+
+- The fighter and opponent screens always show the whole bio. It gets the full width between BACK and the action buttons and as many lines as fit; the type steps down from 8 to as small as 5.5 only when a bio needs it.
+- `SFX.howl` is a real wolf howl now: it scoops up, holds with a wobble and sags away, about 2.3 seconds.
+
 ## 1.8.1 (2026-11-27)
 
 - The announcer no longer cuts itself off. A line asked for while another is still playing waits for it to finish; one that has waited more than 2.5 seconds is dropped as stale. Lines from `SFX.sayAll` and lines with a callback are never dropped.

@@ -6,9 +6,9 @@ The engine handles everything that isn't specific to one game: the skeletal figh
 
 A game supplies the content: its fighters, arenas, fatalities, victory poses, titles and icons.
 
-## What's new in 1.8.1
+## What's new in 1.8.2
 
-The announcer waits for a line to finish instead of cutting it off, and in single match it calls the opponent's name too.
+The fighter and opponent screens always show a fighter's whole bio, and `SFX.howl` sounds like a wolf. 1.8.1: the announcer waits for a line to finish instead of cutting it off, and in single match it calls the opponent's name too.
 
 1.8.0: one layout for both the fighter and opponent screens, and it is the only one: the portrait grid fills the left side, filled from the middle with rows as even as possible and at most six to a row (16 fighters make rows of 6, 5 and 5; 24 make four rows of 6). The spotlight is on the right with the fighter facing left, BACK is bottom left and the two action buttons are bottom right. In single match the fighter screen says NEXT, since the opponent screen comes next. `GAME.selectCols` and `GAME.selectLayout` are gone. A new optional `GAME.titleScene(g, W, H, t)` paints a picture behind the title screen.
 
@@ -35,7 +35,7 @@ Everything is optional, so a game written for 1.0.0 keeps working unchanged. Ful
 
 | Game | Repo | Engine version |
 | --- | --- | --- |
-| Muncie Kombat | [andyshearsphd/Muncie-Kombat](https://github.com/andyshearsphd/Muncie-Kombat) ([play](https://andyshearsphd.github.io/Muncie-Kombat/)) | 1.8.1 |
+| Muncie Kombat | [andyshearsphd/Muncie-Kombat](https://github.com/andyshearsphd/Muncie-Kombat) ([play](https://andyshearsphd.github.io/Muncie-Kombat/)) | 1.8.2 |
 | POTUS Kombat | [andyshearsphd/POTUS-Kombat](https://github.com/andyshearsphd/POTUS-Kombat) | 1.8.1 |
 
 ## Controls

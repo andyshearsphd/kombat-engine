@@ -1636,7 +1636,10 @@
     g.fillStyle = 'rgba(0,0,0,0.55)'; g.beginPath(); g.ellipse(PX, 200, 28, 4, 0, 0, PI * 2); g.fill();
     R.digi(g, f.x, f.y, gg => R.draw(gg, f, def.chair ? chairPose(f, PS.stance(t)) : PS.stance(t), {}));
     TXT.draw(g, def.name, L.cx, L.bottom + 1, { size: 13, align: 'center', fill: 'fire' });
-    bio(g, def.bio, L.cx, L.bottom + 18, Math.max(120, L.gw - 96), 2);
+    // 1.8.2: the whole bio always shows. It gets the full width between BACK and the action buttons and
+    // as many lines as fit above the bottom edge; the type shrinks a step at a time until all of it fits.
+    const bw = Math.max(120, Math.min(2 * (L.cx - 50), 2 * (W - 140 - L.cx)));
+    bioFit(g, def.bio || '', L.cx, L.bottom + 16, bw, H - 2 - (L.bottom + 16));
     uiButton('BACK', 4, H - 24, 42, 20, onBack, 'gold', 10);
     uiButton(act2[0], W - 136, H - 25, 56, 21, act2[1], 'gold', 11);
     uiButton(act1[0], W - 76, H - 28, 70, 26, act1[1], 'fire', 16);
@@ -1648,6 +1651,18 @@
     pickScreen('CHOOSE YOUR FIGHTER', ROSTER.FIGHTERS, sel.i, i => { if (sel.i === i) confirmPick(); else { sel.i = i; SFX.select(); } },
       ['MOVES', () => { screen = 'moves'; movesBack = 'select'; SFX.blip(); }], [mode === 'single' ? 'NEXT' : 'FIGHT', confirmPick], () => { screen = 'title'; SFX.blip(); });
     grit();
+  }
+  function wrapLines(g, str, size, maxW) {
+    const out = []; let line = '';
+    for (const wd of str.split(' ')) { const tr = line ? line + ' ' + wd : wd; if (line && TXT.width(g, tr, size) > maxW) { out.push(line); line = wd; } else line = tr; }
+    if (line) out.push(line);
+    return out;
+  }
+  function bioFit(g, str, cx, top, maxW, maxH) {
+    let size = 8, lines, lh;
+    for (; size >= 5.5; size -= 0.5) { lh = size * 1.32; lines = wrapLines(g, str, size, maxW); if (lines.length * lh <= maxH + 1) break; }
+    size = Math.max(size, 5.5);
+    lines.forEach((ln, i) => TXT.draw(g, ln, cx, top + i * lh, { size, align: 'center', fill: 'white', italic: false }));
   }
   function bio(g, str, cx, ly, maxW, maxLines = 9) {
     const words = str.split(' '); let line = '', n = 0;

@@ -24,6 +24,24 @@ const SFX = (() => {
     g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
     o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.02);
   }
+  // 1.8.2: a real wolf howl. A breathy voice scoops up an octave, holds with a slow wobble, then sags away;
+  // a quieter upper voice and a little breath noise ride along.
+  function wolfHowl(delay = 0) {
+    if (!ac || muted) return;
+    const t = now() + delay, D = 2.3;
+    const voice = (base, type, vol, det) => {
+      const o = ac.createOscillator(), g = ac.createGain(), lp = ac.createBiquadFilter(), lfo = ac.createOscillator(), lg = ac.createGain();
+      o.type = type; o.detune.value = det; lp.type = 'lowpass'; lp.frequency.value = 1800; lp.Q.value = 0.7;
+      const fq = o.frequency;
+      fq.setValueAtTime(base * 0.62, t); fq.exponentialRampToValueAtTime(base * 1.18, t + 0.45);
+      fq.linearRampToValueAtTime(base * 1.22, t + 1.3); fq.exponentialRampToValueAtTime(base * 0.86, t + 2.0); fq.exponentialRampToValueAtTime(base * 0.62, t + D);
+      lfo.frequency.value = 5.2; lg.gain.setValueAtTime(0, t); lg.gain.linearRampToValueAtTime(base * 0.025, t + 0.7); lfo.connect(lg); lg.connect(fq);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.25); g.gain.setValueAtTime(vol, t + 1.5); g.gain.exponentialRampToValueAtTime(0.001, t + D);
+      o.connect(lp); lp.connect(g); g.connect(master); o.start(t); lfo.start(t); o.stop(t + D + 0.05); lfo.stop(t + D + 0.05);
+    };
+    voice(420, 'triangle', 0.32, 0); voice(420, 'sawtooth', 0.05, 7); voice(840, 'sine', 0.07, -5);
+    noise(D, 0.05, 1200, 2, 'bandpass', delay, 0.2, 700);
+  }
   let noiseBuf = null;
   function noise(dur, vol = 0.3, f0 = 1000, q = 1, type = 'bandpass', delay = 0, attack = 0.004, f1 = 0) {
     if (!ac || muted) return;
@@ -232,7 +250,7 @@ const SFX = (() => {
     crunch: () => { for (let i = 0; i < 4; i++) noise(0.05, 0.35, 1500 + Math.random() * 1500, 3, 'bandpass', i * 0.03); tone(80, 0.2, 'square', 0.15, -30); },
     gulp: () => { tone(180, 0.25, 'sine', 0.4, -140); tone(120, 0.2, 'sine', 0.3, -60, 0.18); },
     fart: () => { tone(70, 0.6, 'sawtooth', 0.35, -25); tone(84, 0.6, 'square', 0.12, -30); noise(0.5, 0.3, 200, 2, 'bandpass'); },
-    howl: () => { tone(300, 0.4, 'sawtooth', 0.1, 300); tone(300, 0.4, 'sine', 0.2, 300); tone(600, 1.1, 'sine', 0.22, -260, 0.38); tone(604, 1.1, 'sawtooth', 0.07, -270, 0.38); noise(1.4, 0.06, 900, 3, 'bandpass', 0.05); },
+    howl: () => wolfHowl(),
     hiss: () => { noise(0.55, 0.32, 4200, 0.7, 'highpass', 0, 0.03); noise(0.4, 0.2, 2600, 2, 'bandpass', 0.05); },
     creak: () => { tone(140, 0.7, 'sawtooth', 0.12, -60); tone(95, 0.9, 'sawtooth', 0.1, -40, 0.25); },
     sniff: () => { noise(0.12, 0.35, 3000, 1.5, 'bandpass'); noise(0.12, 0.35, 3200, 1.5, 'bandpass', 0.16); noise(0.35, 0.4, 2600, 1.2, 'bandpass', 0.32, 0.02, 4200); },
