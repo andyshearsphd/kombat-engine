@@ -1581,10 +1581,14 @@
     // 1.8: GAME.titleScene(g, W, H, t) paints a picture behind the title; the title then sits at the top instead of under an emblem
     if (G.titleScene) {
       G.titleScene(ctx, W, H, t);
-      TXT.draw(ctx, G.title, W / 2, 4, { size: 40, align: 'center', fill: 'fire' });
-      if (G.subtitle) TXT.draw(ctx, G.subtitle, W / 2, 48, { size: 10, align: 'center', fill: 'gold' });
+      // 1.8.4: GAME.kicker, optional: a small line stacked above the title ("PURPLE HIPPO ARCADE'S")
+      const ky = G.kicker ? 16 : 0;
+      if (G.kicker) TXT.draw(ctx, G.kicker, W / 2, 3, { size: 13, align: 'center', fill: 'gold' });
+      TXT.draw(ctx, G.title, W / 2, 4 + ky, { size: 40, align: 'center', fill: 'fire' });
+      if (G.subtitle) TXT.draw(ctx, G.subtitle, W / 2, 48 + ky, { size: 10, align: 'center', fill: 'gold' });
     } else {
       emblem(ctx, W / 2, 84, 42, t);
+      if (G.kicker) TXT.draw(ctx, G.kicker, W / 2, 112, { size: 13, align: 'center', fill: 'gold' });
       TXT.draw(ctx, G.title, W / 2, 128, { size: 44, align: 'center', fill: 'fire' });
       if (G.subtitle) TXT.draw(ctx, G.subtitle, W / 2, 180, { size: 10, align: 'center', fill: 'purple' });
     }

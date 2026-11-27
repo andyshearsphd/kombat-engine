@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.8.4 (2026-11-27)
+
+- `GAME.kicker`, optional: a small line stacked above the title on the title screen (Muncie Kombat: "PURPLE HIPPO ARCADE'S"). Without it the title screen is unchanged.
+
 ## 1.8.3 (2026-11-27)
 
 - Fighter and opponent screens: FIGHT and NEXT are bigger (96 by 33), and MOVES and RANDOM sit further left, clear of them. The bio's width keeps clear of both.
