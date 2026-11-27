@@ -6,9 +6,9 @@ The engine handles everything that isn't specific to one game: the skeletal figh
 
 A game supplies the content: its fighters, arenas, fatalities, victory poses, titles and icons.
 
-## What's new in 1.4.0
+## What's new in 1.5.0
 
-Three optional settings, all off unless a game turns them on: combo damage scaling and a cap per combo (`GAME.comboDamage`), a fixed number of select-screen columns (`GAME.selectCols`), and a ladder that draws a set number of opponents at random (`GAME.ladder.opponents`). See Settings below.
+A silence status for command grabs (`silence: n` in a `cgrab` mod): no specials for n seconds. 1.4.0 added three optional settings, all off unless a game turns them on: combo damage scaling and a cap per combo (`GAME.comboDamage`), a fixed number of select-screen columns (`GAME.selectCols`), and a ladder that draws a set number of opponents at random (`GAME.ladder.opponents`). See Settings below.
 
 1.3.0 added three Matrix moves that every fighter gets automatically (the CPU uses them too): the Burly Brawl Flurry, the Phase Dash and the Kip-Up Spin Kick. See Controls below. Full history in `CHANGELOG.md`.
 
@@ -32,7 +32,7 @@ Everything is optional, so a game written for 1.0.0 keeps working unchanged. Ful
 | Game | Repo | Engine version |
 | --- | --- | --- |
 | Muncie Kombat | [andyshearsphd/Muncie-Kombat](https://github.com/andyshearsphd/Muncie-Kombat) ([play](https://andyshearsphd.github.io/Muncie-Kombat/)) | 1.3.2 |
-| POTUS Kombat | [andyshearsphd/POTUS-Kombat](https://github.com/andyshearsphd/POTUS-Kombat) | 1.4.0 |
+| POTUS Kombat | [andyshearsphd/POTUS-Kombat](https://github.com/andyshearsphd/POTUS-Kombat) | 1.5.0 |
 
 ## Controls
 

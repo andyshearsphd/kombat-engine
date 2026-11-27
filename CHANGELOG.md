@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.0 (2026-11-26)
+
+- Silence: a command grab (`cgrab`, `hold: 'stun'`) with `silence: n` in its mod leaves the opponent unable to use specials for n seconds, with a strip of tape over the mouth. The CPU respects it too. Nothing changes unless a fighter's move sets it.
+- Testing: `window.MK.startSpecial(fighter, special)` starts a special directly.
+
 ## 1.4.0 (2026-11-26)
 
 Three optional settings. A game that doesn't set them plays exactly as before.
