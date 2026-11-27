@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.8.3 (2026-11-27)
+
+- Fighter and opponent screens: FIGHT and NEXT are bigger (96 by 33), and MOVES and RANDOM sit further left, clear of them. The bio's width keeps clear of both.
+
 ## 1.8.2 (2026-11-27)
 
 - The fighter and opponent screens always show the whole bio. It gets the full width between BACK and the action buttons and as many lines as fit; the type steps down from 8 to as small as 5.5 only when a bio needs it.

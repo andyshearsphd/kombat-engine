@@ -1638,11 +1638,12 @@
     TXT.draw(g, def.name, L.cx, L.bottom + 1, { size: 13, align: 'center', fill: 'fire' });
     // 1.8.2: the whole bio always shows. It gets the full width between BACK and the action buttons and
     // as many lines as fit above the bottom edge; the type shrinks a step at a time until all of it fits.
-    const bw = Math.max(120, Math.min(2 * (L.cx - 50), 2 * (W - 140 - L.cx)));
+    const bw = Math.max(120, Math.min(2 * (L.cx - 50), 2 * (W - 176 - L.cx)));
     bioFit(g, def.bio || '', L.cx, L.bottom + 16, bw, H - 2 - (L.bottom + 16));
     uiButton('BACK', 4, H - 24, 42, 20, onBack, 'gold', 10);
-    uiButton(act2[0], W - 136, H - 25, 56, 21, act2[1], 'gold', 11);
-    uiButton(act1[0], W - 76, H - 28, 70, 26, act1[1], 'fire', 16);
+    // 1.8.3: the main button (FIGHT / NEXT) is bigger, and MOVES / RANDOM sit further left, clear of it
+    uiButton(act2[0], W - 172, H - 26, 60, 22, act2[1], 'gold', 11);
+    uiButton(act1[0], W - 100, H - 36, 96, 33, act1[1], 'fire', 21);
   }
   function renderSelect() {
     elControls.classList.remove('on'); elPause.classList.remove('on');
