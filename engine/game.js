@@ -1585,9 +1585,11 @@
       // 1.8.5: GAME.titleStack, optional: the title's words stacked one per line ("MUNCIE" over "KOMBAT")
       let ky = G.kicker ? 16 : 0;
       if (G.kicker) TXT.draw(ctx, G.kicker, W / 2, 3, { size: 13, align: 'center', fill: 'gold' });
+      // 1.8.6: GAME.titleSize, optional: the title's type size over a title scene (default 40)
+      const ts = G.titleSize || 40, step = Math.round(ts * 0.9);
       const lines = G.titleStack ? G.title.split(' ') : [G.title];
-      lines.forEach((ln, i) => TXT.draw(ctx, ln, W / 2, 4 + ky + i * 36, { size: 40, align: 'center', fill: 'fire' }));
-      ky += (lines.length - 1) * 36;
+      lines.forEach((ln, i) => TXT.draw(ctx, ln, W / 2, 4 + ky + i * step, { size: ts, align: 'center', fill: 'fire' }));
+      ky += (lines.length - 1) * step + (ts - 40);
       if (G.subtitle) TXT.draw(ctx, G.subtitle, W / 2, 48 + ky, { size: 10, align: 'center', fill: 'gold' });
     } else {
       emblem(ctx, W / 2, 84, 42, t);

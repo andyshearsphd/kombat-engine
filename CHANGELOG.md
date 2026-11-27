@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.8.6 (2026-11-27)
+
+- `GAME.titleSize`, optional: the title's type size on a title screen with `GAME.titleScene` (default 40; stacked lines are spaced to match).
+
 ## 1.8.5 (2026-11-27)
 
 - `GAME.titleStack`, optional: on a title screen with `GAME.titleScene`, the title's words are stacked one per line ("MUNCIE" over "KOMBAT"). Without it the title screen is unchanged.
