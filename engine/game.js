@@ -1602,9 +1602,20 @@
     const t = game.time, g = ctx;
     // 4 by 4 up to 16 fighters; bigger rosters get more, smaller cells (1.1)
     const NF = ROSTER.FIGHTERS.length, NC = G.selectCols || (NF <= 16 ? 4 : Math.ceil(Math.sqrt(NF * 1.7))), GP = NF <= 16 ? 3 : 2;   // 1.4: GAME.selectCols fixes the column count
-    const cw = NF <= 16 ? 40 : Math.floor(Math.min(40, (W - 250 - GP * (NC - 1)) / NC, (H - 120) / Math.ceil(NF / NC) / 0.85)), chh = NF <= 16 ? 34 : Math.floor(cw * 0.85);
-    const gw = NC * (cw + GP) - GP, gx = Math.round(Math.min(150 + (W - 150 - gw) / 2, W - 94 - gw)), gy = 31, cx = gx + gw / 2, rows = Math.ceil(NF / NC);
-    TXT.draw(g, 'CHOOSE YOUR FIGHTER', cx, 4, { size: 20, align: 'center', fill: 'gold' });
+    // 1.6: GAME.selectLayout = 'wide' lets the grid fill the whole right side with bigger portraits; the name and bio go
+    // underneath it and the buttons move into a row under the preview
+    const WIDE = G.selectLayout === 'wide', rows = Math.ceil(NF / NC);
+    let cw, chh, gx, gy;
+    if (WIDE) {
+      const x0 = 154, x1 = W - 6, y0 = 24, y1 = H - 46;
+      cw = Math.floor(Math.min((x1 - x0 - GP * (NC - 1)) / NC, (y1 - y0 - GP * (rows - 1)) / rows / 0.85)); chh = Math.floor(cw * 0.85);
+      gx = Math.round(x0 + (x1 - x0 - (NC * (cw + GP) - GP)) / 2); gy = y0;
+    } else {
+      cw = NF <= 16 ? 40 : Math.floor(Math.min(40, (W - 250 - GP * (NC - 1)) / NC, (H - 120) / Math.ceil(NF / NC) / 0.85)); chh = NF <= 16 ? 34 : Math.floor(cw * 0.85);
+      gx = Math.round(Math.min(150 + (W - 150 - (NC * (cw + GP) - GP)) / 2, W - 94 - (NC * (cw + GP) - GP))); gy = 31;
+    }
+    const gw = NC * (cw + GP) - GP, cx = gx + gw / 2;
+    TXT.draw(g, 'CHOOSE YOUR FIGHTER', cx, WIDE ? 2 : 4, { size: WIDE ? 18 : 20, align: 'center', fill: 'gold' });
     ROSTER.FIGHTERS.forEach((def, i) => {
       const x = gx + (i % NC) * (cw + GP), y = gy + ((i / NC) | 0) * (chh + GP);
       portrait(g, def, x, y, cw, chh, i === sel.i, t);
@@ -1620,11 +1631,19 @@
     g.fillStyle = '#5a4a3a'; g.beginPath(); g.ellipse(70, 205, 50, 7, 0, 0, PI * 2); g.fill();
     g.fillStyle = 'rgba(0,0,0,0.55)'; g.beginPath(); g.ellipse(70, 206, 28, 4, 0, 0, PI * 2); g.fill();
     R.digi(g, f.x, f.y, gg => R.draw(gg, f, def.chair ? chairPose(f, PS.stance(t)) : PS.stance(t), {}));
-    TXT.draw(g, def.name, cx, gy + rows * (chh + GP) + 1, { size: 15, align: 'center', fill: 'fire' });
-    bio(g, def.bio, cx, gy + rows * (chh + GP) + 21, Math.min(gw + 20, 2 * (W - 100 - cx)), 3);
-    uiButton('FIGHT', W - 86, H - 36, 76, 28, confirmPick, 'fire', 18);
-    uiButton('MOVES', W - 86, H - 70, 76, 26, () => { screen = 'moves'; movesBack = 'select'; SFX.blip(); }, 'gold', 14);
-    uiButton('BACK', 6, H - 26, 56, 20, () => { screen = 'title'; SFX.blip(); }, 'gold', 11);
+    if (WIDE) {
+      TXT.draw(g, def.name, cx, gy + rows * (chh + GP) + 1, { size: 13, align: 'center', fill: 'fire' });
+      bio(g, def.bio, cx, gy + rows * (chh + GP) + 18, gw, 2);
+      uiButton('BACK', 3, H - 24, 38, 20, () => { screen = 'title'; SFX.blip(); }, 'gold', 10);
+      uiButton('MOVES', 44, H - 24, 50, 20, () => { screen = 'moves'; movesBack = 'select'; SFX.blip(); }, 'gold', 11);
+      uiButton('FIGHT', 97, H - 27, 54, 25, confirmPick, 'fire', 15);
+    } else {
+      TXT.draw(g, def.name, cx, gy + rows * (chh + GP) + 1, { size: 15, align: 'center', fill: 'fire' });
+      bio(g, def.bio, cx, gy + rows * (chh + GP) + 21, Math.min(gw + 20, 2 * (W - 100 - cx)), 3);
+      uiButton('FIGHT', W - 86, H - 36, 76, 28, confirmPick, 'fire', 18);
+      uiButton('MOVES', W - 86, H - 70, 76, 26, () => { screen = 'moves'; movesBack = 'select'; SFX.blip(); }, 'gold', 14);
+      uiButton('BACK', 6, H - 26, 56, 20, () => { screen = 'title'; SFX.blip(); }, 'gold', 11);
+    }
     grit();
   }
   function bio(g, str, cx, ly, maxW, maxLines = 9) {

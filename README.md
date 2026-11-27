@@ -6,9 +6,9 @@ The engine handles everything that isn't specific to one game: the skeletal figh
 
 A game supplies the content: its fighters, arenas, fatalities, victory poses, titles and icons.
 
-## What's new in 1.5.0
+## What's new in 1.6.0
 
-A silence status for command grabs (`silence: n` in a `cgrab` mod): no specials for n seconds. 1.4.0 added three optional settings, all off unless a game turns them on: combo damage scaling and a cap per combo (`GAME.comboDamage`), a fixed number of select-screen columns (`GAME.selectCols`), and a ladder that draws a set number of opponents at random (`GAME.ladder.opponents`). See Settings below.
+An optional wide select layout (`GAME.selectLayout = 'wide'`) with bigger portraits. 1.5.0 added a silence status for command grabs (`silence: n` in a `cgrab` mod): no specials for n seconds. 1.4.0 added three optional settings, all off unless a game turns them on: combo damage scaling and a cap per combo (`GAME.comboDamage`), a fixed number of select-screen columns (`GAME.selectCols`), and a ladder that draws a set number of opponents at random (`GAME.ladder.opponents`). See Settings below.
 
 1.3.0 added three Matrix moves that every fighter gets automatically (the CPU uses them too): the Burly Brawl Flurry, the Phase Dash and the Kip-Up Spin Kick. See Controls below. Full history in `CHANGELOG.md`.
 
@@ -32,7 +32,7 @@ Everything is optional, so a game written for 1.0.0 keeps working unchanged. Ful
 | Game | Repo | Engine version |
 | --- | --- | --- |
 | Muncie Kombat | [andyshearsphd/Muncie-Kombat](https://github.com/andyshearsphd/Muncie-Kombat) ([play](https://andyshearsphd.github.io/Muncie-Kombat/)) | 1.3.2 |
-| POTUS Kombat | [andyshearsphd/POTUS-Kombat](https://github.com/andyshearsphd/POTUS-Kombat) | 1.5.0 |
+| POTUS Kombat | [andyshearsphd/POTUS-Kombat](https://github.com/andyshearsphd/POTUS-Kombat) | 1.6.0 |
 
 ## Controls
 
@@ -227,6 +227,7 @@ window.GAME = {
   // 1.4, all optional (leave them out to keep the earlier behavior):
   comboDamage: { from: 3, scale: 0.85, cap: 25, healCap: 6 },  // hits after the 3rd do 15% less each, one combo takes at most 25% of the bar, a combo heals at most 6
   selectCols: 6,                       // select screen columns (default: 4 up to 16 fighters, then about square)
+  selectLayout: 'wide',                // 1.6: grid fills the right side, buttons under the preview
   // ladder: { mirror: true, endurance: 2, opponents: 15 },  // fight 15 opponents picked at random instead of the whole roster
 };
 ```

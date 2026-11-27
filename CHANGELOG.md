@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.0 (2026-11-26)
+
+- `GAME.selectLayout = 'wide'`: the select grid fills the whole right side of the screen with bigger portraits (about 48 pixels wide instead of 35 for 24 fighters on a phone), the name and bio sit under the grid, and BACK, MOVES and FIGHT move into a row under the fighter preview. Without the setting the select screen is unchanged.
+
 ## 1.5.0 (2026-11-26)
 
 - Silence: a command grab (`cgrab`, `hold: 'stun'`) with `silence: n` in its mod leaves the opponent unable to use specials for n seconds, with a strip of tape over the mouth. The CPU respects it too. Nothing changes unless a fighter's move sets it.
