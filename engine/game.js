@@ -1597,7 +1597,8 @@
       TXT.draw(ctx, G.title, W / 2, 128, { size: 44, align: 'center', fill: 'fire' });
       if (G.subtitle) TXT.draw(ctx, G.subtitle, W / 2, 180, { size: 10, align: 'center', fill: 'purple' });
     }
-    const go = m => () => { mode = m; SFX.gong(); SFX.music('menu'); screen = 'select'; say(spoken(CALL.choose || 'choose your fighter')); };
+    // 1.8.8: GAME.selectStart, optional: the fighter id the fighter screen highlights every time it opens from the title
+    const go = m => () => { mode = m; if (G.selectStart) { const k = ROSTER.FIGHTERS.findIndex(d => d.id === G.selectStart); if (k >= 0) sel.i = k; } SFX.gong(); SFX.music('menu'); screen = 'select'; say(spoken(CALL.choose || 'choose your fighter')); };
     uiButton('SINGLE MATCH', W / 2 - 152, 196, 144, 28, go('single'), 'gold', 15);
     uiButton('ARCADE LADDER', W / 2 + 8, 196, 144, 28, go('ladder'), 'fire', 15);
     grit();

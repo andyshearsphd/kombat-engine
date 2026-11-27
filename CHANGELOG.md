@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.8.8 (2026-11-27)
+
+- `GAME.selectStart`, optional: a fighter id; the fighter screen highlights that fighter every time it opens from the title. The opponent screen is not affected. Without it the cursor stays where it was left.
+
 ## 1.8.7 (2026-11-27)
 
 - `GAME.endingScene(g, W, H, t, def, kit)`, optional: the game paints the whole ending screen (after the final boss) itself. `def` is the player's fighter; `kit` is `{ R, P, PS, TXT, FLOOR }`. Tapping returns to the title after 2.5 seconds as before. Without it the ending screen is unchanged.
