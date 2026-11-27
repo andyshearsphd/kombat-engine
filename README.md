@@ -6,9 +6,9 @@ The engine handles everything that isn't specific to one game: the skeletal figh
 
 A game supplies the content: its fighters, arenas, fatalities, victory poses, titles and icons.
 
-## What's new in 1.8.8
+## What's new in 1.9.0
 
-Optional `GAME.selectStart` picks the fighter the fighter screen opens on, (1.8.7) optional `GAME.endingScene` lets a game paint its own ending screen, (1.8.6) optional `GAME.titleSize` sets the title's size over a title scene, (1.8.5) optional `GAME.titleStack` stacks the title's words, and (1.8.4) an optional `GAME.kicker` line sits above the title. 1.8.3: bigger FIGHT and NEXT buttons on the fighter and opponent screens, with MOVES and RANDOM moved left. 1.8.2: the fighter and opponent screens always show a fighter's whole bio, and `SFX.howl` sounds like a wolf. 1.8.1: the announcer waits for a line to finish instead of cutting it off, and in single match it calls the opponent's name too.
+Corner traps are gone, on by default: a combo damage cap, at most three launches per trip through the air, the attacker pushed back when hitting someone pinned at the edge, and a CPU that fights its way out of corners. Each is a `GAME` setting a game can tune or switch off. 1.8.8: Optional `GAME.selectStart` picks the fighter the fighter screen opens on, (1.8.7) optional `GAME.endingScene` lets a game paint its own ending screen, (1.8.6) optional `GAME.titleSize` sets the title's size over a title scene, (1.8.5) optional `GAME.titleStack` stacks the title's words, and (1.8.4) an optional `GAME.kicker` line sits above the title. 1.8.3: bigger FIGHT and NEXT buttons on the fighter and opponent screens, with MOVES and RANDOM moved left. 1.8.2: the fighter and opponent screens always show a fighter's whole bio, and `SFX.howl` sounds like a wolf. 1.8.1: the announcer waits for a line to finish instead of cutting it off, and in single match it calls the opponent's name too.
 
 1.8.0: one layout for both the fighter and opponent screens, and it is the only one: the portrait grid fills the left side, filled from the middle with rows as even as possible and at most six to a row (16 fighters make rows of 6, 5 and 5; 24 make four rows of 6). The spotlight is on the right with the fighter facing left, BACK is bottom left and the two action buttons are bottom right. In single match the fighter screen says NEXT, since the opponent screen comes next. `GAME.selectCols` and `GAME.selectLayout` are gone. A new optional `GAME.titleScene(g, W, H, t)` paints a picture behind the title screen.
 
@@ -35,7 +35,7 @@ Everything is optional, so a game written for 1.0.0 keeps working unchanged. Ful
 
 | Game | Repo | Engine version |
 | --- | --- | --- |
-| Muncie Kombat | [andyshearsphd/Muncie-Kombat](https://github.com/andyshearsphd/Muncie-Kombat) ([play](https://andyshearsphd.github.io/Muncie-Kombat/)) | 1.8.8 |
+| Muncie Kombat | [andyshearsphd/Muncie-Kombat](https://github.com/andyshearsphd/Muncie-Kombat) ([play](https://andyshearsphd.github.io/Muncie-Kombat/)) | 1.9.0 |
 | POTUS Kombat | [andyshearsphd/POTUS-Kombat](https://github.com/andyshearsphd/POTUS-Kombat) | 1.8.1 |
 
 ## Controls
@@ -220,6 +220,7 @@ window.GAME = {
   titleSize: 60,                       // optional: title type size with titleScene, default 40 (1.8.6)
   endingScene(g, W, H, t, def, kit) { }, // optional: paint the whole ending screen (1.8.7)
   selectStart: 'hippo',                // optional: fighter the fighter screen opens on (1.8.8)
+  juggleCap: 3, wallPush: true, cpuWallEscape: true,  // anti-trap, on by default (1.9.0); comboDamage defaults to { from: 3, scale: 0.85, cap: 30, healCap: 6 }
   ladderGoal: 'CITY HALL',             // "19 FIGHTS TO CITY HALL"
   endingLine: '...',                   // under the champion on the ending screen
   mascot: 'hippo',                     // fighter whose head is on the title emblem

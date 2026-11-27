@@ -15,7 +15,9 @@
   const ease = t => { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); };
   FX.setFloor(FLOOR);
   const AUTO = /auto/.test(location.search);
-  const G = Object.assign({ voiceClips: null, title: 'KOMBAT', subtitle: '', ladderGoal: '', endingLine: '', mascot: null, toasty: null, winPoses: null, projectiles: {}, ladder: {}, tunes: null, menuTune: null }, window.GAME || {});
+  const G = Object.assign({ voiceClips: null, title: 'KOMBAT', subtitle: '', ladderGoal: '', endingLine: '', mascot: null, toasty: null, winPoses: null, projectiles: {}, ladder: {}, tunes: null, menuTune: null,
+    // 1.9.0 anti-trap defaults (a game can tune them, or switch one off with false / 0)
+    comboDamage: { from: 3, scale: 0.85, cap: 30, healCap: 6 }, juggleCap: 3, wallPush: true, cpuWallEscape: true }, window.GAME || {});
   // announcer calls (1.1): any of these can be replaced by the game
   const CALL = Object.assign({ fight: 'FIGHT!', round: 'ROUND', finish: null, fatality: 'FATALITY', flawless: 'FLAWLESS VICTORY', wins: 'WINS', next: 'NEXT FIGHTER', mirror: 'MIRROR MATCH', endurance: 'ENDURANCE' }, G.calls || {});
   const spoken = s => s.replace(/[!.]/g, '').toLowerCase();
@@ -173,6 +175,8 @@
   const grounded = f => f.y >= FLOOR - 0.5 && !['jump', 'air'].includes(f.state) && !(f.state === 'attack' && f.move && f.move.airborne);
   const actionable = f => ['idle', 'walk', 'crouch', 'block', 'cblock'].includes(f.state);
   const dodging = f => f.state === 'attack' && f.move && (f.move.kind === 'bdodge' && f.mt < 0.64 || f.move.kind === 'wallrun' || f.move.kind === 'phase' && f.mt < 0.3 || f.move.kind === 'kipup' && f.mt < 0.14 || f.move.kind === 'sneak' && f.mt < 0.46);
+  // 1.9.0: after GAME.juggleCap launches in one trip through the air, nothing more can hit them until they land
+  const juggled = f => G.juggleCap && f.state === 'air' && f.juggle >= G.juggleCap && game.phase === 'fight';
   const invuln = f => (f.finishing && game.phase === 'finishwait') || dodging(f) || ['down', 'getup'].includes(f.state) || f.hidden || f.state === 'held' || (f.state === 'attack' && f.move && f.move.kind === 'burrow' && f.mt < 0.6) || (f.state === 'attack' && f.move && f.move.kind === 'playdead' && f.mt < 0.8) || (f.state === 'attack' && f.move && f.move.kind === 'rise' && f.mt < f.move.t[0] + 0.08);
   const parrying = f => f.state === 'attack' && f.move && f.move.parry && f.mt >= f.move.t[0] && f.mt < f.move.t[0] + f.move.t[1];
   function hurtbox(f) {
@@ -246,6 +250,8 @@
   function applyHit(a, v, mv, blocked, cx, cy, proj) {
     const dir = proj ? Math.sign(proj.vx) : a.face;
     const power = a.def.stats.power * (v.def.stats.armor || 1) * (v.def.stats.frail || 1);
+    // 1.9.0: hitting someone pinned at the edge pushes the attacker back instead, so a corner can't be farmed from one spot
+    if (!proj && G.wallPush && game.phase === 'fight') { const [lo, hi] = limits(); if ((dir > 0 && hi - v.x < 34) || (dir < 0 && v.x - lo < 34)) { a.bvx = -dir * 280; a.bst = 0.22; } }
     if (blocked) {
       const chip = (mv.chip ? mv.dmg * 0.2 : 0) * power;
       damage(v, chip, a);
@@ -639,7 +645,10 @@
     if (o.state === 'jump' && dist < 75 && Math.random() < (0.1 + lv * 0.5) * dt * 20) { out.tok = 'D'; out.P = true; return out; }
     // cornered: jump over, counter or turtle up instead of eating a beatdown
     const [wlo, whi] = limits(), cornered = (f.x - wlo < 34 && dx > 0) || (whi - f.x < 34 && dx < 0);
-    if (cornered && dist < 110 && Math.random() < (0.35 + lv * 0.5) * dt * 12) {
+    // 1.9.0: right after getting up in a corner the CPU tries much harder to get out
+    const justUp = G.cpuWallEscape && game.time - (f.wokeT || -9) < 0.9;
+    if (cornered && dist < 110 && justUp && Math.random() < 0.55 * dt * 30) { if (Math.random() < 0.6) { out.tok = 'U' + fwd; return out; } c.blockT = 0.4; out.B = true; return out; }
+    if (cornered && dist < 110 && Math.random() < (0.35 + lv * 0.5) * (G.cpuWallEscape ? 1.5 : 1) * dt * 12) {
       const r = Math.random();
       if (r < 0.18) { f.hist = [{ k: 'B', t: game.time }, { k: 'N', t: game.time }, { k: 'B', t: game.time }]; out.tok = 'B'; out.K = true; return out; }
       if (r < 0.45) { out.tok = 'U' + fwd; return out; }
@@ -754,7 +763,7 @@
       }
       case 'hit': f.vx *= 1 - dt * 8; if (f.blind > 0) f.vx += Math.sin(f.t * 3) * 6; if (f.st >= (f.daze ? 1.1 : f.stunT || 0.26)) { f.state = 'idle'; f.daze = false; f.blind = 0; } break;
       case 'down': f.vx *= 1 - dt * (f.skid > 0 ? 2.5 : 6); if (f.skid > 0) { f.skid -= dt; if (Math.random() < 0.6) FX.dust(f.x, FLOOR, 1); if (Math.random() < 0.3) FX.blood(f.x, FLOOR - 3, 1, 0, 0.3); } if (f.dead && !f.finishing) break; if (f.st > (f.finishing ? 0.9 : 0.7)) { f.state = 'getup'; f.st = 0; } break;
-      case 'getup': if (f.st > 0.35) { f.state = 'idle'; f.stomped = false; } break;
+      case 'getup': if (f.st > 0.35) { f.state = 'idle'; f.stomped = false; f.wokeT = game.time; } break;
       case 'attack': updateAttack(f, o, dt); break;
       case 'held': {
         // 1.1.2 safety net: if whoever was holding us stopped (interrupted, timed out), drop to the floor instead of hanging in the air
@@ -1025,6 +1034,8 @@
       return;
     }
     if (invuln(o) || o.state === 'script' || o.state === 'held') return;
+    // the Matrix moves keep their full air chains; the combo damage cap still applies to them
+    if (juggled(o) && !m.nocap && !(f.move && ['brawl', 'flurry', 'kipup'].includes(f.move.kind)) && f.airAtk !== MV.hang) return;
     let cx, cy;
     if (m.limb) { const c = contact(f, o, m); if (!c) return; cx = c[0]; cy = c[1]; }
     else { const a = atkbox(f, m.box), b = hurtbox(o); if (!overlap(a, b)) return; cx = (Math.max(a.x0, b.x0) + Math.min(a.x1, b.x1)) / 2; cy = (Math.max(a.y0, b.y0) + Math.min(a.y1, b.y1)) / 2; }
@@ -1102,7 +1113,7 @@
         p.o = v; p.vx = -p.vx * 1.15; p.back = false; p.hitV = false; if (p.C) p.C = Object.assign({}, p.C, { boomerang: false });
         v.parried = true; SFX.clang(); FX.spark(p.x, p.y, '#ffe8a0', 12); continue;
       }
-      if (!invuln(v) && v.state !== 'script' && !p.hitV && overlap(box, hurtbox(v))) {
+      if (!invuln(v) && !juggled(v) && v.state !== 'script' && !p.hitV && overlap(box, hurtbox(v))) {
         if (p.C && p.C.boomerang && !p.back) { p.back = true; p.vx = -p.vx; p.hitV = true; } else p.dead = true;
         const blocked = (v.state === 'block' || v.state === 'cblock') && Math.sign(p.x - v.x) === v.face;
         const mv = { dmg: p.dmg, fx: p.push ? 'knock' : 'stun', vx: p.push || 0, vy: -200, stun: 0.42, push: 110, snd: 'big', chip: 1 };

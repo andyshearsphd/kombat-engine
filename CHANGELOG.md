@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.9.0 (2026-11-27)
+
+Corner traps are gone. These are on by default for every game; a game can tune them or switch any one off.
+
+- `GAME.comboDamage` now has a default, `{ from: 3, scale: 0.85, cap: 30, healCap: 6 }`: from the fourth hit of a combo each hit does less, and one combo takes at most 30 health. A game's own setting still wins (POTUS Kombat keeps its 25).
+- `GAME.juggleCap` (default 3): after three launches in one trip through the air, the opponent can't be hit again until they land. The Matrix moves keep their full air chains. `0` switches it off.
+- `GAME.wallPush` (default true): hitting an opponent pinned at the edge of the screen pushes the attacker back instead, so a string of uppercuts walks you out of range.
+- `GAME.cpuWallEscape` (default true): a CPU fighter cornered just after getting up jumps out or blocks far more often, and tries a bit harder to get out of corners in general.
+
 ## 1.8.8 (2026-11-27)
 
 - `GAME.selectStart`, optional: a fighter id; the fighter screen highlights that fighter every time it opens from the title. The opponent screen is not affected. Without it the cursor stays where it was left.
