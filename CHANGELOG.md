@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.4.0 (2026-11-26)
+
+Three optional settings. A game that doesn't set them plays exactly as before.
+
+- `GAME.comboDamage = { from, scale, cap, healCap }`: in a combo (hits landing while the opponent is still reeling, airborne or held), each hit after the `from`th does `scale` times the one before, the whole combo takes at most `cap` health, and the health a combo gives back is at most `healCap`. Without it, the Matrix moves' long chains (hang time punches, the Burly Brawl Flurry) skip the usual limiter and a combo heals 2 per hit, so one chain could swing about half a health bar.
+- `GAME.selectCols`: the number of columns on the select screen (POTUS Kombat: 6, for four rows of six).
+- `GAME.ladder.opponents`: the ladder draws this many regular opponents at random from the roster instead of every fighter, so a long roster keeps the same ladder length. Endurance pairs still come from the whole roster.
+
 ## 1.3.2 (2026-11-26)
 
 - After a fatality the announcer calls the winner (`<name> wins`), then FATALITY, then FLAWLESS VICTORY (or the game's `GAME.calls.flawless`) if the winner took no damage that round. Each line waits for the one before it to finish, with recorded clips or text-to-speech. The banners appear in the same order, and the fatality screen holds a little longer so the last line isn't cut off.

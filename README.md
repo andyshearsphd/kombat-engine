@@ -6,9 +6,11 @@ The engine handles everything that isn't specific to one game: the skeletal figh
 
 A game supplies the content: its fighters, arenas, fatalities, victory poses, titles and icons.
 
-## What's new in 1.3.0
+## What's new in 1.4.0
 
-Three new Matrix moves that every fighter gets automatically (the CPU uses them too): the Burly Brawl Flurry, the Phase Dash and the Kip-Up Spin Kick. See Controls below. Full history in `CHANGELOG.md`.
+Three optional settings, all off unless a game turns them on: combo damage scaling and a cap per combo (`GAME.comboDamage`), a fixed number of select-screen columns (`GAME.selectCols`), and a ladder that draws a set number of opponents at random (`GAME.ladder.opponents`). See Settings below.
+
+1.3.0 added three Matrix moves that every fighter gets automatically (the CPU uses them too): the Burly Brawl Flurry, the Phase Dash and the Kip-Up Spin Kick. See Controls below. Full history in `CHANGELOG.md`.
 
 ## What was new in 1.1.0
 
@@ -30,7 +32,7 @@ Everything is optional, so a game written for 1.0.0 keeps working unchanged. Ful
 | Game | Repo | Engine version |
 | --- | --- | --- |
 | Muncie Kombat | [andyshearsphd/Muncie-Kombat](https://github.com/andyshearsphd/Muncie-Kombat) ([play](https://andyshearsphd.github.io/Muncie-Kombat/)) | 1.3.2 |
-| POTUS Kombat | [andyshearsphd/POTUS-Kombat](https://github.com/andyshearsphd/POTUS-Kombat) | 1.3.2 |
+| POTUS Kombat | [andyshearsphd/POTUS-Kombat](https://github.com/andyshearsphd/POTUS-Kombat) | 1.4.0 |
 
 ## Controls
 
@@ -222,6 +224,10 @@ window.GAME = {
   tunes: [{ name, bpm: 132, notes: 'C5/2 C5/2 D5/2 E5/2 ...', chords: 'C G C F', chordSteps: 16 }],  // fight music; an opponent's tune: n picks one, otherwise it rotates
   menuTune: { name, bpm: 92, notes, chords },
   projectiles: { },                    // see Fighters
+  // 1.4, all optional (leave them out to keep the earlier behavior):
+  comboDamage: { from: 3, scale: 0.85, cap: 25, healCap: 6 },  // hits after the 3rd do 15% less each, one combo takes at most 25% of the bar, a combo heals at most 6
+  selectCols: 6,                       // select screen columns (default: 4 up to 16 fighters, then about square)
+  // ladder: { mirror: true, endurance: 2, opponents: 15 },  // fight 15 opponents picked at random instead of the whole roster
 };
 ```
 
@@ -234,6 +240,8 @@ Tune notes are note names with octave (`C5`, `F#4`, `Bb3`) or `r` for a rest, ea
 3. Commit here, then sync, test and commit each game that should get the update, and update the table above.
 
 Game-specific content never goes in the engine. If a game needs new behavior, add it as a fighter field, a `GAME` setting or a registered script so other games can use it too.
+
+Standing policy: when one game needs the engine to behave differently (a bigger select grid, softer combos), the change is a setting whose default keeps the old behavior. Every game keeps working as it did until it opts in.
 
 ### Known items for the next release
 

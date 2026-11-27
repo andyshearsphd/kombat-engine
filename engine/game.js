@@ -212,7 +212,7 @@
     if (['hit', 'air', 'held'].includes(v.state)) return;
     const n = f.comboN; f.comboN = 0; f.comboOn = null;
     if (n < 3) return;
-    const heal = Math.min(100 - f.hp, n * 2);
+    const CD = G.comboDamage, heal = Math.min(100 - f.hp, n * 2, CD && CD.healCap != null ? CD.healCap : 1e9);
     if (f.hp > 0 && game.phase === 'fight') f.hp += heal;
     banner(n + ' HIT COMBO', { size: 17, fill: 'gold', life: 1.4, y: 52, x: f === p1 ? W * 0.27 : W * 0.73 });
     if (heal > 0.5) banner('+' + Math.round(heal) + ' HEALTH', { size: 10, fill: 'green', life: 1.4, y: 70, x: f === p1 ? W * 0.27 : W * 0.73 });
@@ -259,6 +259,15 @@
     const chain = ['hit', 'air', 'held'].includes(v.state);
     a.comboN = chain ? (a.comboN || 1) + 1 : 1; a.comboOn = v;
     if (v.state === 'air') dmg *= Math.pow(0.75, v.juggle);
+    // 1.4: GAME.comboDamage = { from, scale, cap } shrinks each hit after the first few of a combo and caps a combo's total
+    const CD = G.comboDamage;
+    if (CD && game.phase === 'fight') {
+      if (!chain) { v.comboDmg = 0; v.comboHits = 0; }
+      v.comboHits = (v.comboHits || 0) + 1;
+      if (v.comboHits > (CD.from || 3)) dmg *= Math.pow(CD.scale || 0.85, v.comboHits - (CD.from || 3));
+      if (CD.cap != null) dmg = Math.max(0, Math.min(dmg, CD.cap - (v.comboDmg || 0)));
+      v.comboDmg = (v.comboDmg || 0) + dmg;
+    }
     if (v.state === 'dizzy' && game.phase === 'finish') { finishBlow(a, v, mv); return; }
     damage(v, dmg, a);
     game.hype = Math.min(1, (game.hype || 0) + dmg * 0.025 + (mv.upper ? 0.3 : 0));
@@ -388,12 +397,13 @@
     if (meta.mirror || meta.pair) { const w = meta.mirror ? CALL.mirror : CALL.endurance; banner(w, { size: 16, fill: 'blood', life: 1.3, y: 112 }); }
   }
   function newLadder() {
-    const others = ROSTER.FIGHTERS.filter((f, i) => i !== ladder.pick);
-    for (let i = others.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [others[i], others[j]] = [others[j], others[i]]; }
+    const pool = ROSTER.FIGHTERS.filter((f, i) => i !== ladder.pick);
+    for (let i = pool.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [pool[i], pool[j]] = [pool[j], pool[i]]; }
     // 1.1: GAME.ladder = { mirror: true, endurance: n } adds a mirror match and endurance rounds before the bosses
-    const LO = G.ladder || {}, mid = [], meta = others.map(() => ({}));
+    // 1.4: GAME.ladder.opponents = n fights n opponents drawn at random from the roster instead of all of them
+    const LO = G.ladder || {}, others = LO.opponents ? pool.slice(0, LO.opponents) : pool, mid = [], meta = others.map(() => ({}));
     if (LO.mirror) { mid.push(ROSTER.FIGHTERS[ladder.pick]); meta.push({ mirror: true }); }
-    for (let i = 0; i < (LO.endurance || 0) && others.length > 1; i++) { const a = others[(Math.random() * others.length) | 0]; let b = a; while (b === a) b = others[(Math.random() * others.length) | 0]; mid.push(a); meta.push({ pair: b }); }
+    for (let i = 0; i < (LO.endurance || 0) && pool.length > 1; i++) { const a = pool[(Math.random() * pool.length) | 0]; let b = a; while (b === a) b = pool[(Math.random() * pool.length) | 0]; mid.push(a); meta.push({ pair: b }); }
     for (const b of ROSTER.BOSSES) meta.push({});
     ladder.opps = others.concat(mid, ROSTER.BOSSES); ladder.meta = meta;
     const rot = STAGES.ROTATION.slice();
@@ -1581,7 +1591,7 @@
     bgDark(); ui = [];
     const t = game.time, g = ctx;
     // 4 by 4 up to 16 fighters; bigger rosters get more, smaller cells (1.1)
-    const NF = ROSTER.FIGHTERS.length, NC = NF <= 16 ? 4 : Math.ceil(Math.sqrt(NF * 1.7)), GP = NF <= 16 ? 3 : 2;
+    const NF = ROSTER.FIGHTERS.length, NC = G.selectCols || (NF <= 16 ? 4 : Math.ceil(Math.sqrt(NF * 1.7))), GP = NF <= 16 ? 3 : 2;   // 1.4: GAME.selectCols fixes the column count
     const cw = NF <= 16 ? 40 : Math.floor(Math.min(40, (W - 250 - GP * (NC - 1)) / NC, (H - 120) / Math.ceil(NF / NC) / 0.85)), chh = NF <= 16 ? 34 : Math.floor(cw * 0.85);
     const gw = NC * (cw + GP) - GP, gx = Math.round(Math.min(150 + (W - 150 - gw) / 2, W - 94 - gw)), gy = 31, cx = gx + gw / 2, rows = Math.ceil(NF / NC);
     TXT.draw(g, 'CHOOSE YOUR FIGHTER', cx, 4, { size: 20, align: 'center', fill: 'gold' });
