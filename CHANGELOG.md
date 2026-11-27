@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.0 (2026-11-26)
+
+- New select screen, now the default for every game: a big portrait grid fills the left of the screen, the spotlight with the chosen fighter (facing left) is on the right, BACK is bottom left and MOVES and FIGHT are bottom right. Portraits are capped at 84 pixels wide. `GAME.selectLayout = 'classic'` brings back the old screen. This replaces 1.6.0's `selectLayout: 'wide'`, which is no longer needed.
+
 ## 1.6.0 (2026-11-26)
 
 - `GAME.selectLayout = 'wide'`: the select grid fills the whole right side of the screen with bigger portraits (about 48 pixels wide instead of 35 for 24 fighters on a phone), the name and bio sit under the grid, and BACK, MOVES and FIGHT move into a row under the fighter preview. Without the setting the select screen is unchanged.

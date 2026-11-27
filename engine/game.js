@@ -1602,13 +1602,14 @@
     const t = game.time, g = ctx;
     // 4 by 4 up to 16 fighters; bigger rosters get more, smaller cells (1.1)
     const NF = ROSTER.FIGHTERS.length, NC = G.selectCols || (NF <= 16 ? 4 : Math.ceil(Math.sqrt(NF * 1.7))), GP = NF <= 16 ? 3 : 2;   // 1.4: GAME.selectCols fixes the column count
-    // 1.6: GAME.selectLayout = 'wide' lets the grid fill the whole right side with bigger portraits; the name and bio go
-    // underneath it and the buttons move into a row under the preview
-    const WIDE = G.selectLayout === 'wide', rows = Math.ceil(NF / NC);
+    // 1.7: the grid fills the left of the screen with big portraits and the spotlight is on the right, the fighter
+    // facing left; BACK sits bottom left, MOVES and FIGHT bottom right. GAME.selectLayout = 'classic' keeps the old screen
+    // (small grid on the right, spotlight on the left).
+    const WIDE = G.selectLayout !== 'classic', rows = Math.ceil(NF / NC), PX = WIDE ? W - 76 : 70;
     let cw, chh, gx, gy;
     if (WIDE) {
-      const x0 = 154, x1 = W - 6, y0 = 24, y1 = H - 46;
-      cw = Math.floor(Math.min((x1 - x0 - GP * (NC - 1)) / NC, (y1 - y0 - GP * (rows - 1)) / rows / 0.85)); chh = Math.floor(cw * 0.85);
+      const x0 = 6, x1 = W - 158, y0 = 24, y1 = H - 46;
+      cw = Math.floor(Math.min(84, (x1 - x0 - GP * (NC - 1)) / NC, (y1 - y0 - GP * (rows - 1)) / rows / 0.85)); chh = Math.floor(cw * 0.85);
       gx = Math.round(x0 + (x1 - x0 - (NC * (cw + GP) - GP)) / 2); gy = y0;
     } else {
       cw = NF <= 16 ? 40 : Math.floor(Math.min(40, (W - 250 - GP * (NC - 1)) / NC, (H - 120) / Math.ceil(NF / NC) / 0.85)); chh = NF <= 16 ? 34 : Math.floor(cw * 0.85);
@@ -1623,20 +1624,20 @@
     });
     const def = ROSTER.FIGHTERS[sel.i];
     // big preview on the left
-    const f = { def, d: def.dk, x: 70, y: 206, face: 1, t };
-    const sp = g.createRadialGradient(70, 120, 6, 70, 130, 100); sp.addColorStop(0, '#e8dcc0'); sp.addColorStop(0.45, '#9a8a70'); sp.addColorStop(1, 'rgba(40,10,10,0)');
-    g.fillStyle = sp; g.fillRect(0, 10, 150, 210);
-    g.fillStyle = 'rgba(255,240,200,0.18)'; g.beginPath(); g.moveTo(40, 0); g.lineTo(100, 0); g.lineTo(130, 210); g.lineTo(10, 210); g.closePath(); g.fill();
-    g.fillStyle = '#3a3028'; g.beginPath(); g.ellipse(70, 207, 52, 9, 0, 0, PI * 2); g.fill();
-    g.fillStyle = '#5a4a3a'; g.beginPath(); g.ellipse(70, 205, 50, 7, 0, 0, PI * 2); g.fill();
-    g.fillStyle = 'rgba(0,0,0,0.55)'; g.beginPath(); g.ellipse(70, 206, 28, 4, 0, 0, PI * 2); g.fill();
+    const f = { def, d: def.dk, x: PX, y: 200, face: WIDE ? -1 : 1, t };
+    const sp = g.createRadialGradient(PX, 120, 6, PX, 130, 100); sp.addColorStop(0, '#e8dcc0'); sp.addColorStop(0.45, '#9a8a70'); sp.addColorStop(1, 'rgba(40,10,10,0)');
+    g.fillStyle = sp; g.fillRect(PX - 70, 10, 150, 210);
+    g.fillStyle = 'rgba(255,240,200,0.18)'; g.beginPath(); g.moveTo(PX - 30, 0); g.lineTo(PX + 30, 0); g.lineTo(PX + 60, 210); g.lineTo(PX - 60, 210); g.closePath(); g.fill();
+    g.fillStyle = '#3a3028'; g.beginPath(); g.ellipse(PX, 201, 52, 9, 0, 0, PI * 2); g.fill();
+    g.fillStyle = '#5a4a3a'; g.beginPath(); g.ellipse(PX, 199, 50, 7, 0, 0, PI * 2); g.fill();
+    g.fillStyle = 'rgba(0,0,0,0.55)'; g.beginPath(); g.ellipse(PX, 200, 28, 4, 0, 0, PI * 2); g.fill();
     R.digi(g, f.x, f.y, gg => R.draw(gg, f, def.chair ? chairPose(f, PS.stance(t)) : PS.stance(t), {}));
     if (WIDE) {
       TXT.draw(g, def.name, cx, gy + rows * (chh + GP) + 1, { size: 13, align: 'center', fill: 'fire' });
-      bio(g, def.bio, cx, gy + rows * (chh + GP) + 18, gw, 2);
-      uiButton('BACK', 3, H - 24, 38, 20, () => { screen = 'title'; SFX.blip(); }, 'gold', 10);
-      uiButton('MOVES', 44, H - 24, 50, 20, () => { screen = 'moves'; movesBack = 'select'; SFX.blip(); }, 'gold', 11);
-      uiButton('FIGHT', 97, H - 27, 54, 25, confirmPick, 'fire', 15);
+      bio(g, def.bio, cx, gy + rows * (chh + GP) + 18, Math.max(120, gw - 96), 2);
+      uiButton('BACK', 4, H - 24, 42, 20, () => { screen = 'title'; SFX.blip(); }, 'gold', 10);
+      uiButton('MOVES', W - 136, H - 25, 56, 21, () => { screen = 'moves'; movesBack = 'select'; SFX.blip(); }, 'gold', 11);
+      uiButton('FIGHT', W - 76, H - 28, 70, 26, confirmPick, 'fire', 16);
     } else {
       TXT.draw(g, def.name, cx, gy + rows * (chh + GP) + 1, { size: 15, align: 'center', fill: 'fire' });
       bio(g, def.bio, cx, gy + rows * (chh + GP) + 21, Math.min(gw + 20, 2 * (W - 100 - cx)), 3);
