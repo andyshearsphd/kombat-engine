@@ -1842,6 +1842,15 @@
     elControls.classList.remove('on'); elPause.classList.remove('on');
     bgDark(); ui = [];
     const g = ctx, t = game.time, def = ROSTER.FIGHTERS[ladder.pick];
+    // 1.8.7: GAME.endingScene(g, W, H, t, def, kit), optional: the game paints the whole ending screen itself.
+    // kit: { R, P, PS, TXT, FLOOR, stance(t) }. Tapping still returns to the title after 2.5 seconds.
+    if (G.endingScene) {
+      G.endingScene(g, W, H, t, def, { R, P, PS, TXT, FLOOR });
+      if (game.pt > 2.5) ui.push({ x: 0, y: 0, w: W, h: H, fn: () => { FX.reset(); screen = 'title'; } });
+      game.pt += 1 / 60;
+      grit();
+      return;
+    }
     if (Math.random() < 0.6) FX.blood(rnd(0, W), -4, 1, 0, 0.2);
     FX.setFloor(H + 20); FX.update(1 / 60); FX.drawParts(g); FX.setFloor(FLOOR);
     R.digi(g, W / 2, 206, gg => R.drawFront(gg, { def, d: def.dk, x: W / 2, y: 206, t }, frontPose({ def }, t % 3)), { box: [20, 0, 340, 330] });

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.8.7 (2026-11-27)
+
+- `GAME.endingScene(g, W, H, t, def, kit)`, optional: the game paints the whole ending screen (after the final boss) itself. `def` is the player's fighter; `kit` is `{ R, P, PS, TXT, FLOOR }`. Tapping returns to the title after 2.5 seconds as before. Without it the ending screen is unchanged.
+
 ## 1.8.6 (2026-11-27)
 
 - `GAME.titleSize`, optional: the title's type size on a title screen with `GAME.titleScene` (default 40; stacked lines are spaced to match).
