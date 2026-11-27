@@ -1578,9 +1578,16 @@
     elControls.classList.remove('on'); elPause.classList.remove('on');
     bgDark(); ui = [];
     const t = game.time;
-    emblem(ctx, W / 2, 84, 42, t);
-    TXT.draw(ctx, G.title, W / 2, 128, { size: 44, align: 'center', fill: 'fire' });
-    if (G.subtitle) TXT.draw(ctx, G.subtitle, W / 2, 180, { size: 10, align: 'center', fill: 'purple' });
+    // 1.8: GAME.titleScene(g, W, H, t) paints a picture behind the title; the title then sits at the top instead of under an emblem
+    if (G.titleScene) {
+      G.titleScene(ctx, W, H, t);
+      TXT.draw(ctx, G.title, W / 2, 4, { size: 40, align: 'center', fill: 'fire' });
+      if (G.subtitle) TXT.draw(ctx, G.subtitle, W / 2, 48, { size: 10, align: 'center', fill: 'gold' });
+    } else {
+      emblem(ctx, W / 2, 84, 42, t);
+      TXT.draw(ctx, G.title, W / 2, 128, { size: 44, align: 'center', fill: 'fire' });
+      if (G.subtitle) TXT.draw(ctx, G.subtitle, W / 2, 180, { size: 10, align: 'center', fill: 'purple' });
+    }
     const go = m => () => { mode = m; SFX.gong(); SFX.music('menu'); screen = 'select'; say(spoken(CALL.choose || 'choose your fighter')); };
     uiButton('SINGLE MATCH', W / 2 - 152, 196, 144, 28, go('single'), 'gold', 15);
     uiButton('ARCADE LADDER', W / 2 + 8, 196, 144, 28, go('ladder'), 'fire', 15);
@@ -1596,35 +1603,31 @@
     g.restore();
     g.strokeStyle = on ? '#ffe060' : '#6a4a20'; g.lineWidth = on ? 2 : 1; g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
   }
-  function renderSelect() {
-    elControls.classList.remove('on'); elPause.classList.remove('on');
-    bgDark(); ui = [];
-    const t = game.time, g = ctx;
-    // 4 by 4 up to 16 fighters; bigger rosters get more, smaller cells (1.1)
-    const NF = ROSTER.FIGHTERS.length, NC = G.selectCols || (NF <= 16 ? 4 : Math.ceil(Math.sqrt(NF * 1.7))), GP = NF <= 16 ? 3 : 2;   // 1.4: GAME.selectCols fixes the column count
-    // 1.7: the grid fills the left of the screen with big portraits and the spotlight is on the right, the fighter
-    // facing left; BACK sits bottom left, MOVES and FIGHT bottom right. GAME.selectLayout = 'classic' keeps the old screen
-    // (small grid on the right, spotlight on the left).
-    const WIDE = G.selectLayout !== 'classic', rows = Math.ceil(NF / NC), PX = WIDE ? W - 76 : 70;
-    let cw, chh, gx, gy;
-    if (WIDE) {
-      const x0 = 6, x1 = W - 158, y0 = 24, y1 = H - 46;
-      cw = Math.floor(Math.min(84, (x1 - x0 - GP * (NC - 1)) / NC, (y1 - y0 - GP * (rows - 1)) / rows / 0.85)); chh = Math.floor(cw * 0.85);
-      gx = Math.round(x0 + (x1 - x0 - (NC * (cw + GP) - GP)) / 2); gy = y0;
-    } else {
-      cw = NF <= 16 ? 40 : Math.floor(Math.min(40, (W - 250 - GP * (NC - 1)) / NC, (H - 120) / Math.ceil(NF / NC) / 0.85)); chh = NF <= 16 ? 34 : Math.floor(cw * 0.85);
-      gx = Math.round(Math.min(150 + (W - 150 - (NC * (cw + GP) - GP)) / 2, W - 94 - (NC * (cw + GP) - GP))); gy = 31;
-    }
-    const gw = NC * (cw + GP) - GP, cx = gx + gw / 2;
-    TXT.draw(g, 'CHOOSE YOUR FIGHTER', cx, WIDE ? 2 : 4, { size: WIDE ? 18 : 20, align: 'center', fill: 'gold' });
-    ROSTER.FIGHTERS.forEach((def, i) => {
-      const x = gx + (i % NC) * (cw + GP), y = gy + ((i / NC) | 0) * (chh + GP);
-      portrait(g, def, x, y, cw, chh, i === sel.i, t);
-      ui.push({ x, y, w: cw, h: chh, fn: () => { if (sel.i === i) confirmPick(); else { sel.i = i; SFX.select(); } } });
+  // ---------- choosing a fighter or an opponent (1.8: one layout for both, the only one) ----------
+  // The grid fills the left of the screen: rows as even as possible, at most six to a row, each row centred.
+  // The chosen fighter stands in the spotlight on the right, facing left. BACK is bottom left; the two action
+  // buttons are bottom right.
+  function gridLayout(n) {
+    const rows = Math.max(1, Math.ceil(n / 6)), base = Math.floor(n / rows), extra = n % rows, per = [];
+    for (let r = 0; r < rows; r++) per.push(base + (r < extra ? 1 : 0));
+    const NC = Math.max(...per), GP = 3, x0 = 6, x1 = W - 158, y0 = 24, y1 = H - 46;
+    const cw = Math.floor(Math.min(84, (x1 - x0 - GP * (NC - 1)) / NC, (y1 - y0 - GP * (rows - 1)) / rows / 0.85)), chh = Math.floor(cw * 0.85);
+    const gw = NC * (cw + GP) - GP, gx = Math.round(x0 + (x1 - x0 - gw) / 2), cells = [];
+    per.forEach((m, r) => { const rx = gx + (gw - (m * (cw + GP) - GP)) / 2; for (let c = 0; c < m; c++) cells.push([Math.round(rx + c * (cw + GP)), y0 + r * (chh + GP)]); });
+    return { cells, cw, chh, gw, cx: gx + gw / 2, bottom: y0 + rows * (chh + GP) };
+  }
+  function pickScreen(title, list, cur, onCell, act2, act1, onBack) {
+    const t = game.time, g = ctx, L = gridLayout(list.length);
+    TXT.draw(g, title, L.cx, 2, { size: 18, align: 'center', fill: 'gold' });
+    list.forEach((def, i) => {
+      const [x, y] = L.cells[i];
+      portrait(g, def, x, y, L.cw, L.chh, i === cur, t);
+      if (def.boss) TXT.draw(g, 'BOSS', x + L.cw / 2, y + L.chh - 9, { size: 7, align: 'center', fill: 'blood', italic: false, shadow: false });
+      ui.push({ x, y, w: L.cw, h: L.chh, fn: () => onCell(i) });
     });
-    const def = ROSTER.FIGHTERS[sel.i];
-    // big preview on the left
-    const f = { def, d: def.dk, x: PX, y: 200, face: WIDE ? -1 : 1, t };
+    const def = list[cur], PX = W - 76;
+    // the spotlight on the right, the fighter facing the grid
+    const f = { def, d: def.dk, x: PX, y: 200, face: -1, t };
     const sp = g.createRadialGradient(PX, 120, 6, PX, 130, 100); sp.addColorStop(0, '#e8dcc0'); sp.addColorStop(0.45, '#9a8a70'); sp.addColorStop(1, 'rgba(40,10,10,0)');
     g.fillStyle = sp; g.fillRect(PX - 70, 10, 150, 210);
     g.fillStyle = 'rgba(255,240,200,0.18)'; g.beginPath(); g.moveTo(PX - 30, 0); g.lineTo(PX + 30, 0); g.lineTo(PX + 60, 210); g.lineTo(PX - 60, 210); g.closePath(); g.fill();
@@ -1632,19 +1635,18 @@
     g.fillStyle = '#5a4a3a'; g.beginPath(); g.ellipse(PX, 199, 50, 7, 0, 0, PI * 2); g.fill();
     g.fillStyle = 'rgba(0,0,0,0.55)'; g.beginPath(); g.ellipse(PX, 200, 28, 4, 0, 0, PI * 2); g.fill();
     R.digi(g, f.x, f.y, gg => R.draw(gg, f, def.chair ? chairPose(f, PS.stance(t)) : PS.stance(t), {}));
-    if (WIDE) {
-      TXT.draw(g, def.name, cx, gy + rows * (chh + GP) + 1, { size: 13, align: 'center', fill: 'fire' });
-      bio(g, def.bio, cx, gy + rows * (chh + GP) + 18, Math.max(120, gw - 96), 2);
-      uiButton('BACK', 4, H - 24, 42, 20, () => { screen = 'title'; SFX.blip(); }, 'gold', 10);
-      uiButton('MOVES', W - 136, H - 25, 56, 21, () => { screen = 'moves'; movesBack = 'select'; SFX.blip(); }, 'gold', 11);
-      uiButton('FIGHT', W - 76, H - 28, 70, 26, confirmPick, 'fire', 16);
-    } else {
-      TXT.draw(g, def.name, cx, gy + rows * (chh + GP) + 1, { size: 15, align: 'center', fill: 'fire' });
-      bio(g, def.bio, cx, gy + rows * (chh + GP) + 21, Math.min(gw + 20, 2 * (W - 100 - cx)), 3);
-      uiButton('FIGHT', W - 86, H - 36, 76, 28, confirmPick, 'fire', 18);
-      uiButton('MOVES', W - 86, H - 70, 76, 26, () => { screen = 'moves'; movesBack = 'select'; SFX.blip(); }, 'gold', 14);
-      uiButton('BACK', 6, H - 26, 56, 20, () => { screen = 'title'; SFX.blip(); }, 'gold', 11);
-    }
+    TXT.draw(g, def.name, L.cx, L.bottom + 1, { size: 13, align: 'center', fill: 'fire' });
+    bio(g, def.bio, L.cx, L.bottom + 18, Math.max(120, L.gw - 96), 2);
+    uiButton('BACK', 4, H - 24, 42, 20, onBack, 'gold', 10);
+    uiButton(act2[0], W - 136, H - 25, 56, 21, act2[1], 'gold', 11);
+    uiButton(act1[0], W - 76, H - 28, 70, 26, act1[1], 'fire', 16);
+  }
+  function renderSelect() {
+    elControls.classList.remove('on'); elPause.classList.remove('on');
+    bgDark(); ui = [];
+    // single match goes on to choosing the opponent, so its button says NEXT
+    pickScreen('CHOOSE YOUR FIGHTER', ROSTER.FIGHTERS, sel.i, i => { if (sel.i === i) confirmPick(); else { sel.i = i; SFX.select(); } },
+      ['MOVES', () => { screen = 'moves'; movesBack = 'select'; SFX.blip(); }], [mode === 'single' ? 'NEXT' : 'FIGHT', confirmPick], () => { screen = 'title'; SFX.blip(); });
     grit();
   }
   function bio(g, str, cx, ly, maxW, maxLines = 9) {
@@ -1663,26 +1665,9 @@
   function renderOpp() {
     elControls.classList.remove('on'); elPause.classList.remove('on');
     bgDark(); ui = [];
-    const t = game.time, g = ctx, list = OPPS();
-    const cw = 34, chh = 32, NC = 5, GP = 3, gw = NC * (cw + GP) - GP, gx = Math.round(Math.min(150 + (W - 150 - gw) / 2, W - 94 - gw)), gy = 31, rows = Math.ceil(list.length / NC);
-    TXT.draw(g, 'CHOOSE YOUR OPPONENT', gx + gw / 2, 4, { size: 20, align: 'center', fill: 'gold' });
-    list.forEach((def, i) => {
-      const x = gx + (i % NC) * (cw + GP), y = gy + ((i / NC) | 0) * (chh + GP);
-      portrait(g, def, x, y, cw, chh, i === sel.o, t);
-      if (def.boss) TXT.draw(g, 'BOSS', x + cw / 2, y + chh - 8, { size: 6, align: 'center', fill: 'blood', italic: false, shadow: false });
-      ui.push({ x, y, w: cw, h: chh, fn: () => { if (sel.o === i) { screen = 'arena'; SFX.gong(); } else { sel.o = i; SFX.select(); } } });
-    });
-    const def = list[sel.o];
-    const sp = g.createRadialGradient(70, 120, 6, 70, 130, 100); sp.addColorStop(0, '#e8dcc0'); sp.addColorStop(0.45, '#9a8a70'); sp.addColorStop(1, 'rgba(40,10,10,0)');
-    g.fillStyle = sp; g.fillRect(0, 10, 150, 210);
-    g.fillStyle = '#5a4a3a'; g.beginPath(); g.ellipse(70, 205, 50, 7, 0, 0, PI * 2); g.fill();
-    R.digi(g, 70, 206, gg => R.draw(gg, { def, d: def.dk, x: 70, y: 206, face: 1, t }, def.chair ? chairPose({ d: def.dk }, PS.stance(t)) : PS.stance(t), {}));
-    const cx = gx + gw / 2;
-    TXT.draw(g, def.name, cx, gy + rows * (chh + GP) + 1, { size: 15, align: 'center', fill: 'fire' });
-    bio(g, def.bio, cx, gy + rows * (chh + GP) + 21, Math.min(gw + 20, 2 * (W - 100 - cx)), 3);
-    uiButton('NEXT', W - 86, H - 36, 76, 28, () => { screen = 'arena'; SFX.gong(); }, 'fire', 18);
-    uiButton('RANDOM', W - 86, H - 70, 76, 26, () => { sel.o = (Math.random() * list.length) | 0; SFX.select(); }, 'gold', 13);
-    uiButton('BACK', 6, H - 26, 56, 20, () => { screen = 'select'; SFX.blip(); }, 'gold', 11);
+    const list = OPPS(), next = () => { screen = 'arena'; SFX.gong(); };
+    pickScreen('CHOOSE YOUR OPPONENT', list, sel.o, i => { if (sel.o === i) next(); else { sel.o = i; SFX.select(); } },
+      ['RANDOM', () => { sel.o = (Math.random() * list.length) | 0; SFX.select(); }], ['NEXT', next], () => { screen = 'select'; SFX.blip(); });
     grit();
   }
   function renderArena() {

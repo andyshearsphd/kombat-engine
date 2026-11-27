@@ -6,9 +6,11 @@ The engine handles everything that isn't specific to one game: the skeletal figh
 
 A game supplies the content: its fighters, arenas, fatalities, victory poses, titles and icons.
 
-## What's new in 1.7.0
+## What's new in 1.8.0
 
-A new default select screen: a big portrait grid on the left, the spotlight on the right, BACK bottom left, MOVES and FIGHT bottom right (`GAME.selectLayout = 'classic'` keeps the old one). 1.5.0 added a silence status for command grabs (`silence: n` in a `cgrab` mod): no specials for n seconds. 1.4.0 added three optional settings, all off unless a game turns them on: combo damage scaling and a cap per combo (`GAME.comboDamage`), a fixed number of select-screen columns (`GAME.selectCols`), and a ladder that draws a set number of opponents at random (`GAME.ladder.opponents`). See Settings below.
+One layout for both the fighter and opponent screens, and it is the only one: the portrait grid fills the left side, filled from the middle with rows as even as possible and at most six to a row (16 fighters make rows of 6, 5 and 5; 24 make four rows of 6). The spotlight is on the right with the fighter facing left, BACK is bottom left and the two action buttons are bottom right. In single match the fighter screen says NEXT, since the opponent screen comes next. `GAME.selectCols` and `GAME.selectLayout` are gone. A new optional `GAME.titleScene(g, W, H, t)` paints a picture behind the title screen.
+
+1.5.0 added a silence status for command grabs (`silence: n` in a `cgrab` mod): no specials for n seconds. 1.4.0 added combo damage scaling and a cap per combo (`GAME.comboDamage`) and a ladder that draws a set number of opponents at random (`GAME.ladder.opponents`). See Settings below.
 
 1.3.0 added three Matrix moves that every fighter gets automatically (the CPU uses them too): the Burly Brawl Flurry, the Phase Dash and the Kip-Up Spin Kick. See Controls below. Full history in `CHANGELOG.md`.
 
@@ -31,8 +33,8 @@ Everything is optional, so a game written for 1.0.0 keeps working unchanged. Ful
 
 | Game | Repo | Engine version |
 | --- | --- | --- |
-| Muncie Kombat | [andyshearsphd/Muncie-Kombat](https://github.com/andyshearsphd/Muncie-Kombat) ([play](https://andyshearsphd.github.io/Muncie-Kombat/)) | 1.7.0 |
-| POTUS Kombat | [andyshearsphd/POTUS-Kombat](https://github.com/andyshearsphd/POTUS-Kombat) | 1.7.0 |
+| Muncie Kombat | [andyshearsphd/Muncie-Kombat](https://github.com/andyshearsphd/Muncie-Kombat) ([play](https://andyshearsphd.github.io/Muncie-Kombat/)) | 1.8.0 |
+| POTUS Kombat | [andyshearsphd/POTUS-Kombat](https://github.com/andyshearsphd/POTUS-Kombat) | 1.8.0 |
 
 ## Controls
 
@@ -226,8 +228,8 @@ window.GAME = {
   projectiles: { },                    // see Fighters
   // 1.4, all optional (leave them out to keep the earlier behavior):
   comboDamage: { from: 3, scale: 0.85, cap: 25, healCap: 6 },  // hits after the 3rd do 15% less each, one combo takes at most 25% of the bar, a combo heals at most 6
-  selectCols: 6,                       // select screen columns (default: 4 up to 16 fighters, then about square)
-  selectLayout: 'classic',             // 1.7: the pre-1.7 select screen (default is the big grid on the left)
+  // 1.8, optional:
+  titleScene(g, W, H, t) { },          // paints the title screen background; the title moves to the top and the emblem is skipped
   // ladder: { mirror: true, endurance: 2, opponents: 15 },  // fight 15 opponents picked at random instead of the whole roster
 };
 ```
@@ -242,7 +244,7 @@ Tune notes are note names with octave (`C5`, `F#4`, `Bb3`) or `r` for a rest, ea
 
 Game-specific content never goes in the engine. If a game needs new behavior, add it as a fighter field, a `GAME` setting or a registered script so other games can use it too.
 
-Standing policy: when one game needs the engine to behave differently (a bigger select grid, softer combos), the change is a setting whose default keeps the old behavior. Every game keeps working as it did until it opts in.
+Standing policy: when one game needs the engine to behave differently (a bigger select grid, softer combos), the change is a setting whose default keeps the old behavior. Every game keeps working as it did until it opts in. The exception is the fighter and opponent screens, which have one layout for every game by Andy's choice (1.8.0).
 
 ### Known items for the next release
 

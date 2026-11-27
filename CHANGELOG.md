@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.8.0 (2026-11-27)
+
+- The fighter screen and the opponent screen share one layout, and it is the only one. The portrait grid fills the left side: as many rows as needed at up to six portraits each, the counts as even as possible (16 fighters: 6, 5, 5; 24: four rows of 6), each row centered. The spotlight on the right shows the fighter facing left. BACK is bottom left; bottom right is MOVES plus FIGHT on the fighter screen (NEXT in single match, since choosing the opponent comes next) and RANDOM plus NEXT on the opponent screen. Bosses keep their BOSS tag.
+- Removed `GAME.selectCols` and `GAME.selectLayout` (the classic screen). Games that set them can leave them in; they are ignored.
+- `GAME.titleScene(g, W, H, t)`, optional: paints a scene behind the title screen. The title moves to the top and the mascot emblem is skipped. Without it the title screen is unchanged.
+
 ## 1.7.0 (2026-11-26)
 
 - New select screen, now the default for every game: a big portrait grid fills the left of the screen, the spotlight with the chosen fighter (facing left) is on the right, BACK is bottom left and MOVES and FIGHT are bottom right. Portraits are capped at 84 pixels wide. `GAME.selectLayout = 'classic'` brings back the old screen. This replaces 1.6.0's `selectLayout: 'wide'`, which is no longer needed.
