@@ -8,6 +8,8 @@ A game supplies the content: its fighters, arenas, fatalities, victory poses, ti
 
 ## Latest
 
+**1.9.5** centres the ABOUT page's block of text on the page.
+
 **1.9.4** lets the ABOUT page indent a bullet under another: start the line with two spaces, `  • `.
 
 **1.9.3** adds an optional ABOUT page off the title screen: `GAME.about = { title, lines }`, where a line starting with `• ` is a bullet, `''` is a gap and `*words in asterisks*` are set in gold.
@@ -24,7 +26,7 @@ Everything earlier, release by release, is in `CHANGELOG.md`.
 
 | Game | Repo | Engine version |
 | --- | --- | --- |
-| Muncie Kombat | [andyshearsphd/Muncie-Kombat](https://github.com/andyshearsphd/Muncie-Kombat) ([play](https://andyshearsphd.github.io/Muncie-Kombat/)) | 1.9.4 |
+| Muncie Kombat | [andyshearsphd/Muncie-Kombat](https://github.com/andyshearsphd/Muncie-Kombat) ([play](https://andyshearsphd.github.io/Muncie-Kombat/)) | 1.9.5 |
 | POTUS Kombat | [andyshearsphd/POTUS-Kombat](https://github.com/andyshearsphd/POTUS-Kombat) | 1.9.2 |
 
 ## Controls

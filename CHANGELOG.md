@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.9.5 (2026-11-27)
+
+- ABOUT page: the block of text is centred on the page, across and up and down; its lines stay flush left inside the block.
+
 ## 1.9.4 (2026-11-27)
 
 - ABOUT page: a line starting with `  • ` (two spaces first) is a sub-bullet, indented one step under the bullet before it.

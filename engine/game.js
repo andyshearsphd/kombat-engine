@@ -1696,7 +1696,7 @@
   function renderAbout() {
     elControls.classList.remove('on'); elPause.classList.remove('on');
     bgDark(); ui = [];
-    const A = G.about, g = ctx, top = 34, left = 22, maxW = W - 44, maxH = H - 34 - 32;
+    const A = G.about, g = ctx, top = 34, maxW = W - 44, maxH = H - 34 - 32;
     TXT.draw(g, A.title || 'ABOUT', W / 2, 6, { size: 24, align: 'center', fill: 'fire' });
     const words = (s) => { const out = []; let em = false; for (const raw of s.split(' ')) { let w = raw; const st = w.startsWith('*'); if (st) { em = true; w = w.slice(1); } const en = w.endsWith('*') || w.endsWith('*.') || w.endsWith('*,'); if (en) w = w.replace(/\*([.,]?)$/, '$1'); out.push({ w, em: em || st }); if (en) em = false; } return out; };
     const layout = (size) => {
@@ -1709,7 +1709,7 @@
         for (const wd of words(bullet ? line.slice(sub ? 4 : 2) : line)) {
           const ww = TXT.width(g, wd.w, size);
           if (x > x0 && x + ww > maxW) { x = x0; y += lh; }
-          ops.push({ s: wd.w, x, y, em: wd.em }); x += ww + sp;
+          ops.push({ s: wd.w, x, y, em: wd.em, w: ww }); x += ww + sp;
         }
         y += lh + size * 0.35;
       }
@@ -1717,7 +1717,9 @@
     };
     let L = null;
     for (let s = 10; s >= 5.5; s -= 0.5) { L = layout(s); if (L.h <= maxH) break; }
-    for (const o of L.ops) TXT.draw(g, o.s, left + o.x, top + o.y, { size: L.size, fill: o.em ? 'gold' : 'white', italic: false });
+    // 1.9.5: the block sits centred on the page, its lines still flush left inside it
+    const bw = Math.max(...L.ops.map(o => o.x + (o.w || 0))), bx = (W - bw) / 2, by = top + Math.max(0, (maxH - (L.h - L.size * 0.35)) / 2);
+    for (const o of L.ops) TXT.draw(g, o.s, bx + o.x, by + o.y, { size: L.size, fill: o.em ? 'gold' : 'white', italic: false });
     uiButton('BACK', 4, H - 25, 52, 21, () => { screen = 'title'; }, 'gold', 11);
     grit();
   }
