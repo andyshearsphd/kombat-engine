@@ -532,7 +532,7 @@ const RIG = (() => {
   const DCACHE = new WeakMap();
   function digi(g, x, y, fn, opt = {}) {
     if (opt.cache) {
-      const c = DCACHE.get(opt.cache), key = (opt.tint || '') + '|' + (opt.box || '');
+      const c = DCACHE.get(opt.cache), key = (opt.tint || '') + '|' + (opt.box || '') + '|' + (opt.key || '');
       const ev = opt.every || 2;
       if (c && c.key === key && (digi.frame + (opt.phase || 0)) % ev !== 0 && digi.frame - c.frame < ev && digi.frame >= c.frame) { g.drawImage(c.cv, Math.round(x) - DAX + c.ox, Math.round(y) - DAY + c.oy); return; }
     }
@@ -547,21 +547,24 @@ const RIG = (() => {
     const bx0 = opt.box ? Math.max(0, opt.box[0]) : 0, by0 = opt.box ? Math.max(0, opt.box[1]) : 0;
     const bw = opt.box ? Math.min(DW - bx0, opt.box[2]) : DW, bh = opt.box ? Math.min(DH - by0, opt.box[3]) : DH;
     if (bw <= 0 || bh <= 0) return;
-    const img = dg.getImageData(bx0, by0, bw, bh), dd = img.data;
-    const step = 20, sat = opt.sat != null ? opt.sat : 0.8, con = 1.18, tint = opt.tint;
+    const img = dg.getImageData(bx0, by0, bw, bh), dd = img.data, px = new Uint32Array(dd.buffer, dd.byteOffset, bw * bh);
+    const step = 20, sat = opt.sat != null ? opt.sat : 0.8, con = 1.18, tint = opt.tint, bs = step / 16;
+    // q(v) = Math.round(v / 20) * 20 once clamped to 0..255 by the pixel array; for v > -10 that is
+    // ((v + 10) / 20 | 0) * 20, and anything lower clamps to 0 either way
     for (let yy = 0; yy < bh; yy++) {
-      let i = yy * bw * 4;
-      const ny = (yy + by0) * DW + bx0;
-      for (let xx = 0; xx < bw; xx++, i += 4) {
+      let i = yy * bw * 4, p = yy * bw;
+      const ny = (yy + by0) * DW + bx0, brow = ((yy + by0) & 3) * 4;
+      for (let xx = 0; xx < bw; xx++, i += 4, p++) {
+        if (px[p] === 0) continue;                        // fully see-through: nothing to do
         const a = dd[i + 3];
         if (a < 110) { dd[i + 3] = 0; continue; }
         dd[i + 3] = 255;
         let r = dd[i], gg = dd[i + 1], b = dd[i + 2];
         const l = 0.3 * r + 0.59 * gg + 0.11 * b;
         r = l + (r - l) * sat; gg = l + (gg - l) * sat; b = l + (b - l) * sat;
-        const n = DNOISE[ny + xx] + (BAYER[((yy + by0) & 3) * 4 + ((xx + bx0) & 3)] - 7.5) * (step / 16);
-        r = (r - 120) * con + 116 + n; gg = (gg - 120) * con + 114 + n; b = (b - 120) * con + 112 + n;
-        dd[i] = Math.round(r / step) * step; dd[i + 1] = Math.round(gg / step) * step; dd[i + 2] = Math.round(b / step) * step;
+        const n = DNOISE[ny + xx] + (BAYER[brow + ((xx + bx0) & 3)] - 7.5) * bs;
+        r = (r - 120) * con + 126 + n; gg = (gg - 120) * con + 124 + n; b = (b - 120) * con + 122 + n;
+        dd[i] = r > 0 ? ((r / step) | 0) * step : 0; dd[i + 1] = gg > 0 ? ((gg / step) | 0) * step : 0; dd[i + 2] = b > 0 ? ((b / step) | 0) * step : 0;
       }
     }
     for (let yy = 1; yy < bh - 1; yy++) for (let xx = 1; xx < bw - 1; xx++) {
@@ -580,7 +583,7 @@ const RIG = (() => {
       if (!c) { c = { cv: document.createElement('canvas') }; c.cv.width = bw; c.cv.height = bh; DCACHE.set(opt.cache, c); }
       if (c.cv.width !== bw || c.cv.height !== bh) { c.cv.width = bw; c.cv.height = bh; }
       const cg = c.cv.getContext('2d'); cg.clearRect(0, 0, bw, bh); cg.drawImage(dcv, bx0, by0, bw, bh, 0, 0, bw, bh);
-      c.ox = bx0; c.oy = by0; c.frame = digi.frame; c.key = (opt.tint || '') + '|' + (opt.box || '');
+      c.ox = bx0; c.oy = by0; c.frame = digi.frame; c.key = (opt.tint || '') + '|' + (opt.box || '') + '|' + (opt.key || '');
     }
   }
   digi.AX = DAX; digi.AY = DAY; digi.W = DW; digi.H = DH; digi.frame = 0;

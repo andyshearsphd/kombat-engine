@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.9.2 (2026-11-27)
+
+Speed. Measured with the processor slowed to a quarter speed (a stand-in for a mid-range phone), frames that ran late dropped from about 37% to 10% in normal fights, 80% to 46% in Matrix moves, 99% to 75% on the fighter select screen and 52% to 36% on the ladder.
+
+- Matrix afterimages are painted once, when each one first shows, and reused (they used to repaint the whole fighter for every ghost, every frame). They look the same.
+- The digitizer's pixel pass is faster (integer rounding, see-through pixels skipped) with identical output.
+- In a fatality only the fighter performing it is digitized every frame; the victim, like everyone in a normal fight, every other frame. Scripted moves in a fight still are every frame.
+- Portraits on the select and ladder screens are kept as small pictures: the highlighted one repaints every frame, the rest every third frame, staggered, so the heads still blink and move.
+- Fighters on menu screens (select spotlight, ladder VS, moves and ending screens) are digitized every other frame, like in a fight.
+- The pause button hides while paused, so the pause menu has one RESUME instead of two.
+
 ## 1.9.1 (2026-11-27)
 
 A clean-up. Nothing changes in a game's content files, and nothing plays differently except the first item.

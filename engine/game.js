@@ -1457,17 +1457,25 @@
   }
 
   // ---------- rendering ----------
-  // matrix afterimages: green silhouettes of the last few frames
+  // matrix afterimages: green silhouettes of the last few frames. Each one is painted once, the first time it
+  // shows, into a small pool of canvases kept per fighter, and simply stamped after that.
   let gcv = null, gg2 = null;
   function drawGhosts(g, f) {
     if (!f.trail || !f.trail.length) return;
-    if (!gcv) { gcv = document.createElement('canvas'); gcv.width = 360; gcv.height = 320; gg2 = gcv.getContext('2d'); }
+    const pool = f.ghostPool || (f.ghostPool = { cvs: [], n: 0 });
     f.trail.forEach((e, i) => {
-      gg2.setTransform(1, 0, 0, 1, 0, 0); gg2.globalCompositeOperation = 'source-over'; gg2.clearRect(0, 0, 360, 320);
-      gg2.setTransform(1, 0, 0, 1, 180 - e.x, 250 - e.y);
-      R.draw(gg2, { def: f.def, d: f.d, x: e.x, y: e.y, face: e.face, t: f.t, st: f.st2 }, e.pose, { noWounds: true });
-      gg2.setTransform(1, 0, 0, 1, 0, 0); gg2.globalCompositeOperation = 'source-in'; gg2.fillStyle = '#30ff80'; gg2.fillRect(0, 0, 360, 320);
-      g.globalAlpha = 0.12 + 0.07 * i; g.drawImage(gcv, e.x - 180, e.y - 250); g.globalAlpha = 1;
+      if (!e.cv) {
+        let cv = pool.cvs[pool.n % 6];
+        if (!cv) { cv = pool.cvs[pool.n % 6] = document.createElement('canvas'); cv.width = 360; cv.height = 320; }
+        pool.n++;
+        const c2 = cv.getContext('2d');
+        c2.setTransform(1, 0, 0, 1, 0, 0); c2.globalCompositeOperation = 'source-over'; c2.clearRect(0, 0, 360, 320);
+        c2.setTransform(1, 0, 0, 1, 180 - e.x, 250 - e.y);
+        R.draw(c2, { def: f.def, d: f.d, x: e.x, y: e.y, face: e.face, t: f.t, st: f.st2 }, e.pose, { noWounds: true });
+        c2.setTransform(1, 0, 0, 1, 0, 0); c2.globalCompositeOperation = 'source-in'; c2.fillStyle = '#30ff80'; c2.fillRect(0, 0, 360, 320);
+        e.cv = cv;
+      }
+      g.globalAlpha = 0.12 + 0.07 * i; g.drawImage(e.cv, e.x - 180, e.y - 250); g.globalAlpha = 1;
     });
   }
   // a fighter's silhouette in one flat color (doubles and afterimages)
@@ -1504,7 +1512,8 @@
     } else {
       f.fj = null;
       if (!f.dcache) f.dcache = {};
-      const every = game.phase === 'fatality' || f.state === 'script' ? 1 : 2, ph = f === p2 ? 1 : 0;
+      // scripted moves are digitized every frame; in a fatality only the fighter performing it is
+      const every = (game.phase === 'fatality' ? f === game.winner : f.state === 'script') ? 1 : 2, ph = f === p2 ? 1 : 0;
       R.digi(g, fx, fy + hop, gg => R.draw(gg, { def: f.def, d: f.d, x: fx, y: fy + hop, face: spun ? -f.face : f.face, t: f.t, st: f.st2 }, f.pose, ro),
         { cache: f.dcache, every, phase: ph, box: [50, 20, 280, 310],
           tint: f.ro.ash ? [0.3, 0.3, 0.32] : f.ro.char ? [0.45, 0.35, 0.3] : f.slowT > 0 ? [0.78, 0.92, 1.25] : f.mirror ? [0.62, 0.66, 0.85] : null });
@@ -1601,8 +1610,9 @@
   }
   function renderPlay() {
     elControls.classList.toggle('on', !paused && game.phase !== 'fatality');
-    elPause.classList.add('on');
-    const pl = paused ? 'RESUME' : 'II PAUSE'; if (elPause.textContent !== pl) elPause.textContent = pl;
+    // the pause button hides while paused: the pause menu has its own RESUME
+    elPause.classList.toggle('on', !paused);
+    if (elPause.textContent !== 'II PAUSE') elPause.textContent = 'II PAUSE';
     drawWorld();
     grit();
     FX.drawScreen(ctx, W, H);
@@ -1678,8 +1688,32 @@
     uiButton('ARCADE LADDER', W / 2 + 8, 196, 144, 28, go('ladder'), 'fire', 15);
     grit();
   }
+  // portraits are kept as small pictures: the highlighted one is repainted every frame, the rest every third
+  // frame, staggered so only a third of the grid repaints at once (the heads still blink and sway). Screens with
+  // many portraits refresh them all first (freshen), then stamp them all. The little canvases stay in ordinary memory
+  // (willReadFrequently), which keeps stamping them cheap.
+  const PORTS = new Map(), PORT_EVERY = 3;
+  // digitize caches for fighters shown on menu screens (kept per slot, keyed by fighter)
+  const MENU_DC = { spot: {}, a: {}, b: {}, c: {}, end: {} };
+  const plainAt = (g, x, y) => { const m = g.getTransform(); return m.a === 1 && m.d === 1 && !m.b && !m.c && x === Math.round(x) && y === Math.round(y); };
+  function freshen(g, def, x, y, w, h, on, t) {
+    if (!plainAt(g, x, y)) return null;
+    const key = def.id + '|' + w + 'x' + h, fr = R.digi.frame;
+    let s = PORTS.get(key);
+    if (!s) { s = { cv: document.createElement('canvas'), slot: PORTS.size % PORT_EVERY }; s.cv.width = w; s.cv.height = h; s.g = s.cv.getContext('2d', { willReadFrequently: true }); PORTS.set(key, s); }
+    if (s.fr !== fr && (s.on !== on || s.fr === undefined || on || (fr + s.slot) % PORT_EVERY === 0 || fr - s.fr >= PORT_EVERY || fr < s.fr)) {
+      s.g.setTransform(1, 0, 0, 1, -x, -y); s.g.clearRect(x, y, w, h);
+      paintPortrait(s.g, def, x, y, w, h, on, t); s.on = on; s.fr = fr;
+    }
+    return s;
+  }
   function portrait(g, def, x, y, w, h, on, t) {
     if (window.MK_BOXES) { const m = g.getTransform(); window.MK_BOXES.push({ k: 'pic', s: def.id, x0: m.a * x + m.e, y0: m.d * y + m.f, x1: m.a * (x + w) + m.e, y1: m.d * (y + h) + m.f }); }
+    const s = freshen(g, def, x, y, w, h, on, t);
+    if (s) g.drawImage(s.cv, x, y);
+    else paintPortrait(g, def, x, y, w, h, on, t);
+  }
+  function paintPortrait(g, def, x, y, w, h, on, t) {
     const gr = g.createLinearGradient(0, y, 0, y + h); gr.addColorStop(0, on ? '#7a1a1a' : '#2a0a10'); gr.addColorStop(1, on ? '#3a0606' : '#100206');
     g.fillStyle = gr; g.fillRect(x, y, w, h);
     g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip();
@@ -1704,6 +1738,7 @@
   function pickScreen(title, list, cur, onCell, act2, act1, onBack) {
     const t = game.time, g = ctx, L = gridLayout(list.length);
     TXT.draw(g, title, L.cx, 2, { size: 18, align: 'center', fill: 'gold' });
+    list.forEach((def, i) => { const [x, y] = L.cells[i]; freshen(g, def, x, y, L.cw, L.chh, i === cur, t); });
     list.forEach((def, i) => {
       const [x, y] = L.cells[i];
       portrait(g, def, x, y, L.cw, L.chh, i === cur, t);
@@ -1719,7 +1754,7 @@
     g.fillStyle = '#3a3028'; g.beginPath(); g.ellipse(PX, 201, 52, 9, 0, 0, PI * 2); g.fill();
     g.fillStyle = '#5a4a3a'; g.beginPath(); g.ellipse(PX, 199, 50, 7, 0, 0, PI * 2); g.fill();
     g.fillStyle = 'rgba(0,0,0,0.55)'; g.beginPath(); g.ellipse(PX, 200, 28, 4, 0, 0, PI * 2); g.fill();
-    R.digi(g, f.x, f.y, gg => R.draw(gg, f, def.chair ? chairPose(f, PS.stance(t)) : PS.stance(t), {}));
+    R.digi(g, f.x, f.y, gg => R.draw(gg, f, def.chair ? chairPose(f, PS.stance(t)) : PS.stance(t), {}), { cache: MENU_DC.spot, key: def.id });
     TXT.draw(g, def.name, L.cx, L.bottom + 1, { size: 13, align: 'center', fill: 'fire' });
     // the whole bio always shows. It gets the full width between BACK and the action buttons and
     // as many lines as fit above the bottom edge; the type shrinks a step at a time until all of it fits.
@@ -1799,7 +1834,7 @@
     elControls.classList.remove('on'); elPause.classList.remove('on');
     bgDark(); ui = [];
     const g = ctx, t = game.time, w = game.winner, def = w.def, won = w === p1;
-    R.digi(g, W / 2, 200, gg => R.drawFront(gg, { def, d: def.dk, x: W / 2, y: 200, t }, frontPose({ def }, t % 3)), { box: [20, 0, 340, 330] });
+    R.digi(g, W / 2, 200, gg => R.drawFront(gg, { def, d: def.dk, x: W / 2, y: 200, t }, frontPose({ def }, t % 3)), { box: [20, 0, 340, 330], cache: MENU_DC.end, key: def.id });
     TXT.draw(g, won ? 'YOU WIN' : 'YOU LOSE', W / 2, 8, { size: 30, align: 'center', fill: won ? 'gold' : 'blood' });
     TXT.draw(g, def.name + ' WINS', W / 2, 44, { size: 13, align: 'center', fill: 'white' });
     uiButton('REMATCH', 10, H - 100, 110, 26, () => { SFX.gong(); startMatch(); }, 'fire', 14);
@@ -1893,8 +1928,9 @@
     const me = ROSTER.FIGHTERS[ladder.pick], op = ladder.opps[r], mt = (ladder.meta && ladder.meta[r]) || {};
     const sp = (def, t2) => def.chair ? chairPose({ d: def.dk }, PS.stance(t2)) : PS.stance(t2);
     const f1 = { def: me, d: me.dk, x: cx - 68, y: 196, face: 1, t }, f2 = { def: op, d: op.dk, x: cx + (mt.pair ? 52 : 68), y: 196, face: -1, t: t + 1 };
-    if (mt.pair) { const f3 = { def: mt.pair, d: mt.pair.dk, x: cx + 96, y: 192, face: -1, t: t + 2 }; R.digi(g, f3.x, f3.y, gg => R.draw(gg, f3, sp(mt.pair, t + 2)), { tint: [0.7, 0.7, 0.7] }); }
-    R.digi(g, f1.x, f1.y, gg => R.draw(gg, f1, sp(me, t))); R.digi(g, f2.x, f2.y, gg => R.draw(gg, f2, sp(op, t + 1)), mt.mirror ? { tint: [0.62, 0.66, 0.85] } : {});
+    if (mt.pair) { const f3 = { def: mt.pair, d: mt.pair.dk, x: cx + 96, y: 192, face: -1, t: t + 2 }; R.digi(g, f3.x, f3.y, gg => R.draw(gg, f3, sp(mt.pair, t + 2)), { tint: [0.7, 0.7, 0.7], cache: MENU_DC.c, key: mt.pair.id }); }
+    R.digi(g, f1.x, f1.y, gg => R.draw(gg, f1, sp(me, t)), { cache: MENU_DC.a, key: me.id });
+    R.digi(g, f2.x, f2.y, gg => R.draw(gg, f2, sp(op, t + 1)), mt.mirror ? { tint: [0.62, 0.66, 0.85], cache: MENU_DC.b, key: op.id, phase: 1 } : { cache: MENU_DC.b, key: op.id, phase: 1 });
     if (mt.mirror || mt.pair) TXT.draw(g, mt.mirror ? CALL.mirror : CALL.endurance, cx, 64, { size: 12, align: 'center', fill: 'blood' });
     TXT.draw(g, 'VS', cx, 110, { size: 30, align: 'center', fill: 'fire' });
     TXT.draw(g, 'BATTLE ' + (r + 1) + ' OF ' + n, cx, 30, { size: 14, align: 'center', fill: 'white' });
@@ -1932,7 +1968,7 @@
     }
     if (Math.random() < 0.6) FX.blood(rnd(0, W), -4, 1, 0, 0.2);
     FX.setFloor(H + 20); FX.update(1 / 60); FX.drawParts(g); FX.setFloor(FLOOR);
-    R.digi(g, W / 2, 206, gg => R.drawFront(gg, { def, d: def.dk, x: W / 2, y: 206, t }, frontPose({ def }, t % 3)), { box: [20, 0, 340, 330] });
+    R.digi(g, W / 2, 206, gg => R.drawFront(gg, { def, d: def.dk, x: W / 2, y: 206, t }, frontPose({ def }, t % 3)), { box: [20, 0, 340, 330], cache: MENU_DC.end, key: def.id });
     TXT.draw(g, def.name, W / 2, 10, { size: 30, align: 'center', fill: 'fire' });
     TXT.draw(g, 'IS THE CHAMPION OF', W / 2, 46, { size: 14, align: 'center', fill: 'white' });
     TXT.draw(g, G.title, W / 2, 62, { size: 24, align: 'center', fill: 'blood' });
