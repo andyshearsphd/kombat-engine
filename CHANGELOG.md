@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.9.4 (2026-11-27)
+
+- ABOUT page: a line starting with `  • ` (two spaces first) is a sub-bullet, indented one step under the bullet before it.
+
 ## 1.9.3 (2026-11-27)
 
 - `GAME.about = { title, lines }`, optional: an ABOUT button in the title screen's bottom-left corner opens a page of the game maker's own words. A line starting with `• ` is a bullet, `''` is a gap, and `*words in asterisks*` are set in gold; the type shrinks until the page fits. Without it the title screen is unchanged.

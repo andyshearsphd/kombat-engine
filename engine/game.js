@@ -1690,7 +1690,8 @@
     if (G.about) uiButton('ABOUT', 4, H - 25, 52, 21, () => { SFX.gong(); screen = 'about'; }, 'gold', 11);
     grit();
   }
-  // GAME.about = { title, lines: [...] }: a line starting with '• ' is a bullet with a hanging indent, '' is a gap,
+  // GAME.about = { title, lines: [...] }: a line starting with '• ' is a bullet with a hanging indent ('  • ' indents
+  // it one step further, under the bullet before it), '' is a gap,
   // and *words in asterisks* are set in gold. The type shrinks until the whole page fits.
   function renderAbout() {
     elControls.classList.remove('on'); elPause.classList.remove('on');
@@ -1702,9 +1703,10 @@
       const lh = size * 1.38, sp = TXT.width(g, ' ', size) || size * 0.3, ind = size * 1.3, ops = []; let y = 0;
       for (const line of A.lines) {
         if (!line) { y += lh * 0.55; continue; }
-        const bullet = line.startsWith('• '), x0 = bullet ? ind : 0; let x = x0;
-        if (bullet) ops.push({ s: '•', x: size * 0.25, y, em: true });
-        for (const wd of words(bullet ? line.slice(2) : line)) {
+        // '• ' is a bullet; '  • ' (two spaces first) is a bullet tucked under the one before it
+        const sub = line.startsWith('  • '), bullet = sub || line.startsWith('• '), x0 = bullet ? ind * (sub ? 2 : 1) : 0; let x = x0;
+        if (bullet) ops.push({ s: sub ? '-' : '•', x: size * 0.25 + (sub ? ind : 0), y, em: true });
+        for (const wd of words(bullet ? line.slice(sub ? 4 : 2) : line)) {
           const ww = TXT.width(g, wd.w, size);
           if (x > x0 && x + ww > maxW) { x = x0; y += lh; }
           ops.push({ s: wd.w, x, y, em: wd.em }); x += ww + sp;
