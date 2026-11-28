@@ -8,6 +8,8 @@ A game supplies the content: its fighters, arenas, fatalities, victory poses, ti
 
 ## Latest
 
+**1.9.3** adds an optional ABOUT page off the title screen: `GAME.about = { title, lines }`, where a line starting with `• ` is a bullet, `''` is a gap and `*words in asterisks*` are set in gold.
+
 **1.9.2** is about speed: Matrix afterimages, portraits, fatalities, menus and the digitizer's pixel pass all got cheaper, with no change to the look. The pause menu also lost its duplicate RESUME button.
 
 **1.9.1** is a clean-up with no change to how anything plays, except that the win, fatality and flawless banners and calls now wait while the game is paused. Dead code and leftovers are gone, repeated code became small shared helpers, and every `GAME` setting is listed with its default at the top of `engine/game.js`.
@@ -20,7 +22,7 @@ Everything earlier, release by release, is in `CHANGELOG.md`.
 
 | Game | Repo | Engine version |
 | --- | --- | --- |
-| Muncie Kombat | [andyshearsphd/Muncie-Kombat](https://github.com/andyshearsphd/Muncie-Kombat) ([play](https://andyshearsphd.github.io/Muncie-Kombat/)) | 1.9.2 |
+| Muncie Kombat | [andyshearsphd/Muncie-Kombat](https://github.com/andyshearsphd/Muncie-Kombat) ([play](https://andyshearsphd.github.io/Muncie-Kombat/)) | 1.9.3 |
 | POTUS Kombat | [andyshearsphd/POTUS-Kombat](https://github.com/andyshearsphd/POTUS-Kombat) | 1.9.2 |
 
 ## Controls

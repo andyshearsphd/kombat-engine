@@ -1686,7 +1686,7 @@
     const go = m => () => { mode = m; if (G.selectStart) { const k = ROSTER.FIGHTERS.findIndex(d => d.id === G.selectStart); if (k >= 0) sel.i = k; } SFX.gong(); SFX.music('menu'); screen = 'select'; say(spoken(CALL.choose || 'choose your fighter')); };
     uiButton('SINGLE MATCH', W / 2 - 152, 196, 144, 28, go('single'), 'gold', 15);
     uiButton('ARCADE LADDER', W / 2 + 8, 196, 144, 28, go('ladder'), 'fire', 15);
-    // 1.9.1: GAME.about, optional: an ABOUT button in the corner opens a page of the game maker's own words
+    // 1.9.3: GAME.about, optional: an ABOUT button in the corner opens a page of the game maker's own words
     if (G.about) uiButton('ABOUT', 4, H - 25, 52, 21, () => { SFX.gong(); screen = 'about'; }, 'gold', 11);
     grit();
   }
