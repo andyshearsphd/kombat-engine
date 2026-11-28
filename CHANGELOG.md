@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.9.1 (2026-11-27)
+
+- `GAME.about = { title, lines }`, optional: an ABOUT button in the title screen's bottom-left corner opens a page of the game maker's own words. A line starting with `• ` is a bullet, `''` is a gap, and `*words in asterisks*` are set in gold; the type shrinks until the page fits. Without it the title screen is unchanged.
+
 ## 1.9.2 (2026-11-27)
 
 Speed. Measured with the processor slowed to a quarter speed (a stand-in for a mid-range phone), frames that ran late dropped from about 37% to 10% in normal fights, 80% to 46% in Matrix moves, 99% to 75% on the fighter select screen and 52% to 36% on the ladder.

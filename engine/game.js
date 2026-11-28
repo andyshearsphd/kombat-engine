@@ -1686,6 +1686,37 @@
     const go = m => () => { mode = m; if (G.selectStart) { const k = ROSTER.FIGHTERS.findIndex(d => d.id === G.selectStart); if (k >= 0) sel.i = k; } SFX.gong(); SFX.music('menu'); screen = 'select'; say(spoken(CALL.choose || 'choose your fighter')); };
     uiButton('SINGLE MATCH', W / 2 - 152, 196, 144, 28, go('single'), 'gold', 15);
     uiButton('ARCADE LADDER', W / 2 + 8, 196, 144, 28, go('ladder'), 'fire', 15);
+    // 1.9.1: GAME.about, optional: an ABOUT button in the corner opens a page of the game maker's own words
+    if (G.about) uiButton('ABOUT', 4, H - 25, 52, 21, () => { SFX.gong(); screen = 'about'; }, 'gold', 11);
+    grit();
+  }
+  // GAME.about = { title, lines: [...] }: a line starting with '• ' is a bullet with a hanging indent, '' is a gap,
+  // and *words in asterisks* are set in gold. The type shrinks until the whole page fits.
+  function renderAbout() {
+    elControls.classList.remove('on'); elPause.classList.remove('on');
+    bgDark(); ui = [];
+    const A = G.about, g = ctx, top = 34, left = 22, maxW = W - 44, maxH = H - 34 - 32;
+    TXT.draw(g, A.title || 'ABOUT', W / 2, 6, { size: 24, align: 'center', fill: 'fire' });
+    const words = (s) => { const out = []; let em = false; for (const raw of s.split(' ')) { let w = raw; const st = w.startsWith('*'); if (st) { em = true; w = w.slice(1); } const en = w.endsWith('*') || w.endsWith('*.') || w.endsWith('*,'); if (en) w = w.replace(/\*([.,]?)$/, '$1'); out.push({ w, em: em || st }); if (en) em = false; } return out; };
+    const layout = (size) => {
+      const lh = size * 1.38, sp = TXT.width(g, ' ', size) || size * 0.3, ind = size * 1.3, ops = []; let y = 0;
+      for (const line of A.lines) {
+        if (!line) { y += lh * 0.55; continue; }
+        const bullet = line.startsWith('• '), x0 = bullet ? ind : 0; let x = x0;
+        if (bullet) ops.push({ s: '•', x: size * 0.25, y, em: true });
+        for (const wd of words(bullet ? line.slice(2) : line)) {
+          const ww = TXT.width(g, wd.w, size);
+          if (x > x0 && x + ww > maxW) { x = x0; y += lh; }
+          ops.push({ s: wd.w, x, y, em: wd.em }); x += ww + sp;
+        }
+        y += lh + size * 0.35;
+      }
+      return { ops, h: y, size };
+    };
+    let L = null;
+    for (let s = 10; s >= 5.5; s -= 0.5) { L = layout(s); if (L.h <= maxH) break; }
+    for (const o of L.ops) TXT.draw(g, o.s, left + o.x, top + o.y, { size: L.size, fill: o.em ? 'gold' : 'white', italic: false });
+    uiButton('BACK', 4, H - 25, 52, 21, () => { screen = 'title'; }, 'gold', 11);
     grit();
   }
   // portraits are kept as small pictures: the highlighted one is repainted every frame, the rest every third
@@ -2001,6 +2032,7 @@
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
     if (screen === 'title') return renderTitle();
+    if (screen === 'about') return renderAbout();
     if (screen === 'select') { game.time += 0; return renderSelect(); }
     if (screen === 'moves') return renderMoves();
     if (screen === 'ladder') return renderLadder();
